@@ -1,0 +1,11 @@
+1: Usuario creado con exito
+2: Error: Usuario ya activo en el sistema
+3: Cuenta creada y esperando aprobacion
+4: Reserva exitosa
+5: Error: la reserva choca con otra reserva
+6: Reporte creado
+7: Solicitud Aprobada
+8: Solicitud Rechazada
+9: Estado de avería actualizado
+10: Horario guardado
+11: Choque entre horarios
