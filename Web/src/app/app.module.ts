@@ -14,6 +14,7 @@ import { HomeAdminComponent } from './componentes/administrador/home-admin/home-
 import { CalendarioComponent } from './componentes/compartidos/calendario/calendario.component';
 import { HomeOperadorComponent } from './componentes/operador/home-operador/home-operador.component';
 import { ContenidoPrincipalComponent } from './componentes/compartidos/contenido-principal/contenido-principal.component';
+import { ReservaLabComponent } from './componentes/operador/reserva-lab/reserva-lab.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { ContenidoPrincipalComponent } from './componentes/compartidos/contenido
     HomeAdminComponent,
     CalendarioComponent,
     HomeOperadorComponent,
-    ContenidoPrincipalComponent
+    ContenidoPrincipalComponent,
+    ReservaLabComponent
   ],
   imports: [
     BrowserModule,
