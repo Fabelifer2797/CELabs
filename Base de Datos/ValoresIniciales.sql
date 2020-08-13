@@ -21,3 +21,11 @@ INSERT INTO EstadoSolicitud(info) values
 INSERT INTO Laboratorio(codigo, aula) VALUES
 ('Lab-01','F2-09'),
 ('Lab-02','F2-10');
+
+INSERT INTO CorreoSeguridad(correo, estado) VALUES
+('seguridad@XTEC.com',true);
+
+INSERT INTO MotivoCorreo(motivo) VALUES
+('Reserva Aprobada'),
+('Palmada Aprobada'),
+('Palmada Cancelada');

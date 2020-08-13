@@ -9,3 +9,14 @@
 9: Estado de avería actualizado
 10: Horario guardado
 11: Choque entre horarios
+12: Datos del usuario actualizados
+13: Error: Usuario no puede desactivarse porque es el ultimo administrador activo
+14: Usuario desactivado
+15: Registro de envio de correo guardado
+16: Error: Fecha de reserva está afuera del rango de dias del horario
+17: Error: No es posible reservar en un dia del fin de semana
+18: Error: Hora de reserva está afuera del rango de trabajo del laboratorio ese día
+19: Error: Las palmadas solo pueden reservarse despues de las horas de trabajo o fines de semana
+20: Nuevo estado de avería creado
+21: Reserva cancelada
+22: Palmada cancelada

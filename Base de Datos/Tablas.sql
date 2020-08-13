@@ -131,9 +131,11 @@ CREATE TABLE IF NOT EXISTS SolicitudRTT(
 CREATE TABLE IF NOT EXISTS Palmada(
     idPalmada SERIAL PRIMARY KEY,
     idOperador INT NOT NULL REFERENCES Operador(idOperador),
+    idUsuario INT NOT NULL REFERENCES Usuario(idusuario),
     fechaHoraI TIMESTAMP NOT NULL,
     fechaHoraF TIMESTAMP NOT NULL,
     fechaHoraSolicitud TIMESTAMP NOT NULL,
+    motivo TEXT NOT NULL,
     idLaboratorio INT NOT NULL REFERENCES Laboratorio(idLaboratorio),
     idEstadoSolicitud INT NOT NULL REFERENCES EstadoSolicitud(idEstadoSolicitud)
 );
@@ -182,4 +184,22 @@ CREATE TABLE IF NOT EXISTS Horario(
   fechaInicio DATE NOT NULL,
   fechaFinal DATE NOT NULL,
   idAdministrador INT REFERENCES Administrador(idAdministrador)
+);
+
+CREATE TABLE IF NOT EXISTS CorreoSeguridad(
+    idCorreoSeguridad SERIAL PRIMARY KEY,
+    correo TEXT NOT NULL,
+    estado BOOL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS MotivoCorreo(
+    idMotivoCorreo SERIAL PRIMARY KEY,
+    motivo TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS RegistroCorreos(
+    idRegistro SERIAL PRIMARY KEY,
+    correo TEXT NOT NULL,
+    fechaHora TIMESTAMP NOT NULL,
+    idMotivoCorreo INT NOT NULL REFERENCES MotivoCorreo(idMotivoCorreo)
 );

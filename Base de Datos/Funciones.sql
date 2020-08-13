@@ -1,3 +1,5 @@
+SET TIMEZONE TO 'GMT';
+
 CREATE OR REPLACE FUNCTION buscarIdUsuario(
     _idXtec TEXT
 )
@@ -218,7 +220,7 @@ RETURNS INT AS $$
         END IF;
 
         -- Enviar solicitud de cuenta nueva
-        INSERT INTO NuevaCuenta(idusuario, fechahora, idestadosolicitud) VALUES (idU, CURRENT_TIMESTAMP, 1);
+        INSERT INTO NuevaCuenta(idusuario, fechahora, idestadosolicitud) VALUES (idU, CURRENT_TIMESTAMP AT TIME ZONE 'CST', 1);
 
         RETURN 3;
     END;
@@ -257,7 +259,7 @@ RETURNS INT AS $$
         END IF;
 
         -- Enviar solicitud de cuenta nueva
-        INSERT INTO NuevaCuenta(idusuario, fechahora, idestadosolicitud) VALUES (idU, CURRENT_TIMESTAMP, 1);
+        INSERT INTO NuevaCuenta(idusuario, fechahora, idestadosolicitud) VALUES (idU, CURRENT_TIMESTAMP AT TIME ZONE 'CST', 1);
 
         RETURN 3;
     END;
@@ -298,14 +300,51 @@ CREATE OR REPLACE FUNCTION crearReserva(
 )
 RETURNS INT AS $$
     DECLARE idRes INT;
+            diaSemana INT;
+            _fecha timestamp = _fechaReserva + _horaInicio;
+            _y  INT = EXTRACT(YEAR FROM _fecha);
+            _m INT = EXTRACT(MONTH FROM _fecha);
+            _d INT = EXTRACT(DAY FROM _fecha);
+            _idHorario INT;
     BEGIN
+        SELECT idhorario INTO _idHorario FROM horario
+        WHERE fechainicio < _fechaReserva AND fechafinal > _fechaReserva;
+
+        IF _idHorario IS NULL THEN
+            RETURN 16;
+        END IF;
+
+        SELECT validarDiaSemana(_y, _m, _d) INTO diaSemana;
+
+        IF diaSemana = 0 OR diaSemana = 6 THEN
+            RETURN 17;
+        ELSEIF diaSemana = 1 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainiciolunes < _horaInicio AND horafinallunes > _horaFinal;
+        ELSEIF diaSemana = 2 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainiciomartes < _horaInicio AND horafinalmartes > _horaFinal;
+        ELSEIF diaSemana = 3 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainiciomiercoles < _horaInicio AND horafinalmiercoles > _horaFinal;
+        ELSEIF diaSemana = 4 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainiciojueves < _horaInicio AND horafinaljueves > _horaFinal;
+        ELSE
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainicioviernes < _horaInicio AND horafinalviernes > _horaFinal;
+        END IF;
+
+        IF _idHorario IS NULL THEN
+            RETURN 18;
+        END IF;
 
         SELECT idreserva INTO idRes FROM Reserva
-        WHERE fechareserva = _fechaReserva AND idestadoreserva = 1 AND horainicio <= _horaFinal AND _horaInicio <= horafinal;
+        WHERE fechareserva = _fechaReserva AND idestadoreserva = 1 AND horainicio <= _horaFinal AND _horaInicio <= horafinal AND idlaboratorio = _idLaboratorio;
 
         IF idRes IS NULL THEN
             INSERT INTO Reserva(idoperador, idusuario, fechareserva, horainicio, horafinal, fechahorasolicitud, idlaboratorio, idestadoreserva, motivo, idcurso) VALUES
-            (_idOperador, _idUsuarioReserva, _fechaReserva, _horaInicio, _horaFinal, CURRENT_TIMESTAMP, _idLaboratorio, 1, _motivo, _idCurso);
+            (_idOperador, _idUsuarioReserva, _fechaReserva, _horaInicio, _horaFinal, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idLaboratorio, 1, _motivo, _idCurso);
             RETURN 4;
         ELSE
             RETURN 5;
@@ -326,7 +365,7 @@ CREATE OR REPLACE FUNCTION crearReporteInventario(
 RETURNS INT AS $$
     BEGIN
         INSERT INTO ReporteInventario(idoperador, fechahora, idlaboratorio, computadorasc, computadorasi, proyectores, sillas, extintores) VALUES
-        (_idOperador, CURRENT_TIMESTAMP, _idLaboratorio, _computadorasC, _computadorasI, _proyectores, _sillas, _extintores);
+        (_idOperador, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idLaboratorio, _computadorasC, _computadorasI, _proyectores, _sillas, _extintores);
 
         RETURN 6;
     END;
@@ -343,7 +382,7 @@ CREATE OR REPLACE FUNCTION crearReporteAveria(
 RETURNS INT AS $$
     BEGIN
         INSERT INTO ReporteAveria(idoperador, idlaboratorio, idestadoaveria, fechahora, activo, descripcion) VALUES
-        (_idOperador, _idLaboratorio, 1, CURRENT_TIMESTAMP, _activo, _descripcion);
+        (_idOperador, _idLaboratorio, 1, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _activo, _descripcion);
 
         RETURN 6;
     END;
@@ -359,14 +398,14 @@ CREATE OR REPLACE FUNCTION crearReporteTT(
 RETURNS INT AS $$
     BEGIN
         INSERT INTO ReporteTT(idoperador, horainicio, horafinal, fechahora, idestadosolicitud, actividades) VALUES
-        (_idOperador, _horaInicio, _horaFinal, CURRENT_TIMESTAMP, 1, _actividades);
+        (_idOperador, _horaInicio, _horaFinal, CURRENT_TIMESTAMP AT TIME ZONE 'CST', 1, _actividades);
 
         RETURN 6;
     END;
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION crearSolicitudRTT(
+CREATE OR REPLACE FUNCTION actualizarSolicitudRTT(
     _idReporteTT INT,
     _idUsuario INT,
     _idEstadoSolicitud INT
@@ -374,7 +413,7 @@ CREATE OR REPLACE FUNCTION crearSolicitudRTT(
 RETURNS INT AS $$
     BEGIN
         INSERT INTO SolicitudRTT(idreportett, idusuario, fechahorarespuesta, idestadosolicitud) VALUES
-        (_idReporteTT, _idUsuario, CURRENT_TIMESTAMP, _idEstadoSolicitud);
+        (_idReporteTT, _idUsuario, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idEstadoSolicitud);
 
         UPDATE ReporteTT
         SET idestadosolicitud = _idEstadoSolicitud
@@ -393,7 +432,7 @@ CREATE OR REPLACE FUNCTION darSeguimientoAveria(
 RETURNS INT AS $$
     BEGIN
         INSERT INTO SeguimientoAveria(idreporteaveria, idusuario, idestadoaveria, fechahora) VALUES
-        (_idReporteAveria, _idUsuario, _idEstadoAveria, CURRENT_TIMESTAMP);
+        (_idReporteAveria, _idUsuario, _idEstadoAveria, CURRENT_TIMESTAMP AT TIME ZONE 'CST');
 
         UPDATE reporteaveria
         SET idestadoaveria = _idEstadoAveria
@@ -406,19 +445,62 @@ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION crearPalmada(
     _idOperador INT,
+    _idUsuario INT,
     _fechaHoraI TIMESTAMP,
     _fechaHoraF TIMESTAMP,
-    _idLaboratorio INT
+    _idLaboratorio INT,
+    _motivo TEXT
 )
 RETURNS INT AS $$
     DECLARE idPal INT;
+            diaSemana INT;
+            _y  INT = EXTRACT(YEAR FROM _fechaHoraI);
+            _m INT = EXTRACT(MONTH FROM _fechaHoraI);
+            _d INT = EXTRACT(DAY FROM _fechaHoraI);
+            _idHorario INT;
+            _horaI TIME = _fechaHoraI::TIME;
+            _horaF TIME = _fechaHoraF::TIME;
     BEGIN
+
+        SELECT idhorario INTO _idHorario FROM horario
+        WHERE fechainicio < _fechaHoraI AND fechafinal > _fechaHoraI;
+
+        IF _idHorario IS NULL THEN
+            RETURN 16;
+        END IF;
+
+        SELECT validarDiaSemana(_y, _m, _d) INTO diaSemana;
+
+        IF diaSemana = 1 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainiciomartes > _horaF AND horafinallunes < _horaI;
+        ELSEIF diaSemana = 2 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainiciomiercoles > _horaF AND horafinalmartes < _horaI;
+        ELSEIF diaSemana = 3 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainiciojueves > _horaF AND horafinalmiercoles < _horaI;
+        ELSEIF diaSemana = 4 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainicioviernes > _horaF AND horafinaljueves < _horaI;
+        ELSEIF diaSemana = 5 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horafinalviernes < _horaI;
+        ELSEIF diaSemana = 0 THEN
+            SELECT idhorario INTO _idHorario FROM Horario
+            WHERE horainiciolunes > _horaF;
+        END IF;
+
+        IF _idHorario IS NULL THEN
+            RETURN 19;
+        END IF;
+
         SELECT idpalmada INTO idPal FROM Palmada
-        WHERE fechahorai <= _fechaHoraF AND _fechaHoraI <= fechahoraf;
+        WHERE fechahorai <= _fechaHoraF AND _fechaHoraI <= fechahoraf AND idestadosolicitud = 2 AND idlaboratorio = _idLaboratorio;
 
         IF idPal IS NULL THEN
-            INSERT INTO Palmada(idoperador, fechahorai, fechahoraf, fechahorasolicitud, idlaboratorio, idestadosolicitud) VALUES
-            (_idOperador, _fechaHoraI, _fechaHoraF, CURRENT_TIMESTAMP, _idLaboratorio, 1);
+            INSERT INTO Palmada(idoperador, idusuario, fechahorai, fechahoraf, fechahorasolicitud, idlaboratorio, idestadosolicitud, motivo) VALUES
+            (_idOperador, _idUsuario, _fechaHoraI, _fechaHoraF, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idLaboratorio, 1, _motivo);
             RETURN 4;
         ELSE
             RETURN 5;
@@ -427,7 +509,7 @@ RETURNS INT AS $$
     $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION crearSolicitudPalmada(
+CREATE OR REPLACE FUNCTION actualizarSolicitudPalmada(
     _idPalmada INT,
     _idAdministrador INT,
     _idEstadoSolicitud INT
@@ -435,7 +517,7 @@ CREATE OR REPLACE FUNCTION crearSolicitudPalmada(
 RETURNS INT AS $$
     BEGIN
        INSERT INTO SolicitudPalmada(idpalmada, idadministrador, fechahorarespuesta, idestadosolicitud) VALUES
-        (_idPalmada, _idAdministrador, CURRENT_TIMESTAMP, _idEstadoSolicitud);
+        (_idPalmada, _idAdministrador, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idEstadoSolicitud);
 
        UPDATE Palmada
        SET idestadosolicitud = _idEstadoSolicitud
@@ -446,7 +528,7 @@ RETURNS INT AS $$
     $$
 LANGUAGE plpgsql;
 
-CREATE FUNCTION crearSolicitudCuenta(
+CREATE OR REPLACE FUNCTION actualizarSolicitudCuenta(
     _idCuenta INT,
     _idAdministrador INT,
     _idEstadoSolicitud INT
@@ -516,31 +598,434 @@ RETURNS INT AS $$
     END;
     $$
 LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION crearEstadoAveria(
+    _info INT
+)
+RETURNS INT AS $$
+    BEGIN
+        INSERT INTO EstadoAveria(info) VALUES (_info);
+        RETURN 20;
+    END;
+    $$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION actualizarUsuario(
+    _idUsuario INT,
+    _nombre TEXT,
+    _apellidos TEXT,
+    _telefono TEXT
+)
+RETURNS INT AS $$
+    BEGIN
+        UPDATE Usuario
+        SET nombre = _nombre, apellidos = _apellidos, telefono = _telefono
+        WHERE idusuario = _idUsuario;
+
+        RETURN 12;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION desactivarUsuario(
+    _idUsuario INT
+)
+RETURNS INT AS $$
+    DECLARE rol INT;
+            cantAdmins INT;
+    BEGIN
+        SELECT rolactual INTO rol FROM Usuario
+        WHERE idusuario = _idUsuario;
+
+        IF rol != 1 THEN --Desactivar rol anterior
+            IF rol = 2 THEN
+                UPDATE EDA SET estado = false
+                WHERE idusuario = _idUsuario;
+            ELSEIF rol = 3 THEN
+                UPDATE Operador SET estado = false
+                WHERE idusuario = _idUsuario;
+            ELSEIF rol = 4 THEN
+                UPDATE Docente SET estado = false
+                WHERE idusuario = _idUsuario;
+            ELSEIF rol = 5 THEN
+                UPDATE PA SET estado = false
+                WHERE idusuario = _idUsuario;
+            END IF;
+        ELSE
+            SELECT count(*) INTO cantAdmins FROM Administrador
+            WHERE estado = true;
+
+            IF cantAdmins = 1 THEN
+                RETURN 13;
+            ELSE
+                UPDATE Administrador SET estado = false
+                WHERE idusuario = _idUsuario;
+            END IF;
+
+        END IF;
+
+        UPDATE Usuario
+        SET estado = false
+        WHERE idusuario = _idUsuario;
+
+        RETURN 14;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION buscarCorreo(
+    _idUsuario INT
+)
+RETURNS TEXT AS $$
+    DECLARE _correo INT;
+    BEGIN
+        SELECT email INTO _correo FROM Usuario
+        WHERE idusuario = _idUsuario;
+
+        RETURN _correo;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION buscarCorreoSeguridad(
+)
+RETURNS TEXT AS $$
+    DECLARE _correo INT;
+    BEGIN
+        SELECT correo INTO _correo FROM CorreoSeguridad
+        WHERE estado = true
+        LIMIT 1;
+
+        RETURN _correo;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION registrarCorreoEnviado(
+    _correo TEXT,
+    _idMotivoCorreo INT
+)
+RETURNS INT AS $$
+    BEGIN
+        INSERT INTO RegistroCorreos(correo, fechahora, idmotivocorreo) VALUES
+        (_correo, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idMotivoCorreo);
+
+        RETURN 15;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION validarDiaSemana(
+    _ano INT,
+    _mes INT,
+    _dia INT
+)
+RETURNS INT AS $$
+    DECLARE t int array[12] = '{ 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 }';
+    BEGIN
+        IF _mes < 3 THEN
+            _ano = _ano - 1;
+        END IF;
+        RETURN ((_ano + _ano / 4 - _ano / 100 + _ano / 400 + t[_mes] + _dia) % 7);
+        -- D:0, L:1, K:2, M:3, J:4, V:5, S:6
+
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verReportesInventario(
+    _pagina INT
+)
+RETURNS TABLE(
+    idreporteinv INT,
+    fechaHora TIMESTAMP,
+    nombreOperador TEXT,
+    apellidosOperador TEXT,
+    codigoLab TEXT,
+    computadorasC INT,
+    computadorasI INT,
+    proyectores INT,
+    sillas INT,
+    extintores INT
+             ) AS $$
+    DECLARE _offset INT = _pagina * 10 - 10;
+    BEGIN
+        RETURN QUERY
+        SELECT RI.idresporteinv, RI.fechahora, U.nombre, U.apellidos, L.codigo, RI.computadorasc, RI.computadorasi, RI.proyectores, RI.sillas, RI.extintores
+        FROM ReporteInventario RI
+        INNER JOIN Operador O on RI.idoperador = O.idoperador
+        INNER JOIN Usuario U on O.idusuario = U.idusuario
+        INNER JOIN Laboratorio L on RI.idlaboratorio = L.idlaboratorio
+        ORDER BY fechahora DESC
+        LIMIT 10
+        OFFSET _offset;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verReportesAverias(
+    _pagina INT
+)
+RETURNS TABLE(
+    fechaHora TIMESTAMP,
+    nombreOperador TEXT,
+    apellidoOperador TEXT,
+    codigoLab TEXT,
+    activo TEXT,
+    estado TEXT,
+    descripcion TEXT
+             ) AS $$
+    DECLARE _offset INT = _pagina * 10 - 10;
+    BEGIN
+        RETURN QUERY
+        SELECT RA.fechahora, U.nombre, U.apellidos, L.codigo, RA.activo, E.info, RA.descripcion
+        FROM ReporteAveria RA
+        INNER JOIN Operador O on RA.idoperador = O.idoperador
+        INNER JOIN Usuario U on O.idusuario = U.idusuario
+        INNER JOIN Laboratorio L on RA.idlaboratorio = L.idlaboratorio
+        INNER JOIN estadoaveria E on RA.idestadoaveria = E.idestadoaveria
+        ORDER BY E.idestadoaveria, RA.fechahora DESC
+        LIMIT 10
+        OFFSET 0;
+    END;
+    $$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verHorasReservadasTR(
+)
+RETURNS TABLE(
+    idLab INT,
+    codigoLab TEXT,
+    aulaLab TEXT,
+    codigoCurso TEXT,
+    nombreCurso TEXT,
+    horaInicio TIME,
+    horaFinal TIME
+) AS $$
+    DECLARE _now TIMESTAMP = CURRENT_TIMESTAMP AT TIME ZONE 'CST';
+    BEGIN
+        RETURN QUERY
+        SELECT L.idlaboratorio, L.codigo, L.aula, C.codigo, C.nombre, R.horainicio, R.horafinal
+        FROM Reserva R
+        INNER JOIN Laboratorio L on R.idlaboratorio = L.idlaboratorio
+        INNER JOIN Curso C on R.idcurso = C.idcurso
+        WHERE R.fechareserva = _now::DATE AND R.horainicio < _now::TIME AND R.horafinal > _now::TIME AND R.idestadoreserva = 1
+        ORDER BY L.idlaboratorio;
+    END;
+
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION cancelarReserva(
+    _idReserva INT
+)RETURNS INT AS $$
+    BEGIN
+        UPDATE Reserva
+        SET idestadoreserva = 3
+        WHERE idreserva = _idReserva;
+
+        RETURN 21;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION cancelarPalmada(
+    _idPalmada INT
+)RETURNS INT AS $$
+    BEGIN
+        UPDATE Palmada
+        SET idestadosolicitud = 3
+        WHERE idpalmada = _idPalmada;
+
+        RETURN 22;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verEstadosAveria()
+RETURNS TABLE(
+    idEstadoAveria INT,
+    info TEXT
+) AS $$
+    BEGIN
+        RETURN QUERY
+        SELECT E.idestadoaveria, E.info FROM EstadoAveria E;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verEstadosSolicitud()
+RETURNS TABLE(
+    idEstadoSolicitud INT,
+    info TEXT
+) AS $$
+    BEGIN
+        RETURN QUERY
+        SELECT E.idEstadoSolicitud, E.info FROM EstadoSolicitud E;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verLaboratorios()
+RETURNS TABLE(
+    idLab INT,
+    codigo TEXT,
+    aula TEXT
+) AS $$
+    BEGIN
+        RETURN QUERY
+        SELECT L.idlaboratorio, L.codigo, L.aula FROM Laboratorio L;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verCursos()
+RETURNS TABLE(
+    idCurso INT,
+    codigo TEXT,
+    nombre TEXT
+) AS $$
+    BEGIN
+        RETURN QUERY
+        SELECT C.idCurso, C.codigo, C.nombre FROM Curso C;
+    END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verSolicitudesCuenta(
+    _pagina INT
+)
+RETURNS TABLE(
+    idNuevaCuenta INT,
+    fechaHora TIMESTAMP,
+    nombre TEXT,
+    apellidos TEXT,
+    idXTEC TEXT,
+    email TEXT
+) AS $$
+    DECLARE _offset INT = _pagina * 10 - 10;
+    BEGIN
+        RETURN QUERY
+        SELECT NC.idcuenta, NC.fechahora, U.nombre, U.apellidos, U.idxtec, U.email
+        FROM NuevaCuenta NC
+        INNER JOIN Usuario U on NC.idusuario = U.idusuario
+        WHERE NC.idestadosolicitud = 1
+        ORDER BY NC.fechahora DESC
+        LIMIT 10
+        OFFSET _offset;
+    END;
+    $$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verSolicitudesRTT(
+    _pagina INT
+)
+RETURNS TABLE(
+    idReporteTT INT,
+    fechaHora TIMESTAMP,
+    nombre TEXT,
+    apellidos TEXT,
+    horaInicio TIME,
+    horaFinal TIME,
+    actividades TEXT
+) AS $$
+    DECLARE _offset INT = _pagina * 10 - 10;
+    BEGIN
+        RETURN QUERY
+        SELECT R.idreportett, R.fechahora, U.nombre, U.apellidos, R.horainicio, R.horafinal, R.actividades
+        FROM ReporteTT R
+        INNER JOIN Operador O on R.idoperador = O.idoperador
+        INNER JOIN Usuario U on O.idusuario = U.idusuario
+        WHERE R.idestadosolicitud = 1
+        ORDER BY R.fechahora DESC
+        LIMIT 10
+        OFFSET _offset;
+
+    END;
+    $$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION verSolicitudesPalmada(
+    _pagina INT
+)
+RETURNS TABLE(
+    idPalmada INT,
+    fechaHoraSolicitud TIMESTAMP,
+    nombreOperador TEXT,
+    apellidosOperador TEXT,
+    fechaHoraI TIMESTAMP,
+    fechaHoraF TIMESTAMP,
+    motivo TEXT,
+    idLab INT,
+    codigoLab TEXT
+
+) AS $$
+    DECLARE _offset INT = _pagina * 10 - 10;
+    BEGIN
+        RETURN QUERY
+        SELECT P.idpalmada, P.fechahorasolicitud, U.nombre, U.apellidos, P.fechahorai, P.fechahoraf, P.motivo, L.idlaboratorio, L.codigo
+        FROM Palmada P
+        INNER JOIN Laboratorio L on P.idlaboratorio = L.idlaboratorio
+        INNER JOIN Operador O on P.idoperador = O.idoperador
+        INNER JOIN Usuario U on O.idusuario = U.idusuario
+        WHERE P.idestadosolicitud = 1
+        ORDER BY P.fechahorasolicitud DESC
+        LIMIT 10
+        OFFSET _offset;
+    END;
+    $$
+LANGUAGE plpgsql;
 ---------------------------------------------------------------
-select crearEDA('Oscar', 'Arias', '2017094138', '@gmail.com', '8888');
 
-select crearOperador('Jose', 'a', '2000', '@', '123');
-select crearDocente('a','b','10','@','1');
-select crearCurso('intro','a');
-select crearLaboratorio('1','f2-10');
+SELECT verReportesInventario(1);
 
-select crearReserva(null, 1, '2020 8 6', '10:00:00', '12:00:00', 1, 'examen', 1);
-select crearReserva(1, 1, '2020 8 4', '12:00:01', '14:00:00', 1, 'examen', 1);
-select crearReserva(1, 1, '2020 8 5', '9:00:01', '15:00:00', 1, 'examen', 1);
+INSERT INTO usuario(nombre, apellidos, idxtec, email, telefono, estado, rolactual) values
+('a','a,','000','@','222',true,3);
 
-select * from administrador;
+INSERT INTO operador(idusuario, estado) VALUES
+(5,true);
 
-select * from usuario;
+SELECT crearReporteInventario(1, 2, 20, 3333, 4, 21, 2);
 
-select * from docente;
+SELECT crearReporteAveria(1, 1, 'computadora 9', 'se despicho');
 
-select * from eda;
+SELECT darSeguimientoAveria(9, 1, 3);
 
-select * from operador;
+SELECT verReportesAverias(1);
 
-select * from reserva;
+SELECT crearHorario('8:00:00', '17:00:00', '8:00:00', '17:00:00', '8:00:00', '17:00:00', '8:00:00', '17:00:00', '8:00:00', '17:00:00', '2020-8-10', '2020-10-30', 1);
 
-SELECT COUNT(*) FROM USUARIO;
+SELECT crearReserva(1, 5, '2020-08-14', '9:00:00', '11:00:00', 2, 'Porque si', 1);
 
-insert into docente(idusuario, estado) VALUES (1, true);
+INSERT INTO Reserva(idoperador, idusuario, fechareserva, horainicio, horafinal, fechahorasolicitud, idlaboratorio, idestadoreserva, motivo, idcurso) VALUES
+(1,3,'2020-8-13','0:30:00', '2:00:00', CURRENT_TIMESTAMP AT TIME ZONE 'CST', 2, 1, '',1);
 
+SELECT verHorasReservadasTR();
+
+SELECT verestadosaveria();
+
+SELECT verestadossolicitud();
+
+SELECT verLaboratorios();
+
+SELECT verCursos();
+
+SELECT CURRENT_TIME AT TIME ZONE 'CST';
+
+INSERT INTO nuevacuenta(idusuario, fechahora, idestadosolicitud) VALUES
+(4, CURRENT_TIMESTAMP AT TIME ZONE 'CST', 1),
+(4, CURRENT_TIMESTAMP AT TIME ZONE 'CST', 1),
+(4, CURRENT_TIMESTAMP AT TIME ZONE 'CST', 1),
+(4, CURRENT_TIMESTAMP AT TIME ZONE 'CST', 2);
+
+SELECT verSolicitudesCuenta(1);
+
+SELECT crearReporteTT(1,'10:00:00', '11:00:00', 'ez');
+
+SELECT verSolicitudesRTT(1);
+
+SELECT crearPalmada(1,3, '2020-8-12 22:00:00', CURRENT_TIMESTAMP AT TIME ZONE 'CST', 3, 'A');
+
+SELECT verSolicitudesPalmada(1);
+
+SELECT actualizarSolicitudPalmada(2,1,2);
