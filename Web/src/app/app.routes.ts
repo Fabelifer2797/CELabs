@@ -7,6 +7,8 @@ import {ReporteAveriaComponent} from './componentes/operador/reporte-averia/repo
 import {ReportesGeneradosAveriasComponent} from './componentes/operador/reportes-generados-averias/reportes-generados-averias.component';
 import { ReporteInventarioComponent } from './componentes/operador/reporte-inventario/reporte-inventario.component';
 import { ReportesGeneradosInventarioComponent  } from './componentes/operador/reportes-generados-inventario/reportes-generados-inventario.component';
+import { RegistrarTiempoComponent } from './componentes/operador/registrar-tiempo/registrar-tiempo.component';
+
 
 
 const APP_ROUTES: Routes = [
@@ -18,8 +20,9 @@ const APP_ROUTES: Routes = [
     {path: 'reportesGeneradosAverias',component:ReportesGeneradosAveriasComponent},
     {path:'reporteInventario',component:ReporteInventarioComponent},
     {path:'reportesGeneradosInventario',component:ReportesGeneradosInventarioComponent},
+    {path:'registrarTiempo',component:RegistrarTiempoComponent},
     {path: '**', pathMatch: 'full', redirectTo: 'homeOperador'}
 ];
 
 
-export const APP_ROUTING =RouterModule.forRoot(APP_ROUTES,{useHash:true});
+export const APP_ROUTING = RouterModule.forRoot(APP_ROUTES,{useHash:true});

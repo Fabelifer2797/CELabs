@@ -19,6 +19,7 @@ import { ReporteAveriaComponent } from './componentes/operador/reporte-averia/re
 import { ReportesGeneradosAveriasComponent } from './componentes/operador/reportes-generados-averias/reportes-generados-averias.component';
 import { ReporteInventarioComponent } from './componentes/operador/reporte-inventario/reporte-inventario.component';
 import { ReportesGeneradosInventarioComponent } from './componentes/operador/reportes-generados-inventario/reportes-generados-inventario.component';
+import { RegistrarTiempoComponent } from './componentes/operador/registrar-tiempo/registrar-tiempo.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { ReportesGeneradosInventarioComponent } from './componentes/operador/rep
     ReporteAveriaComponent,
     ReportesGeneradosAveriasComponent,
     ReporteInventarioComponent,
-    ReportesGeneradosInventarioComponent
+    ReportesGeneradosInventarioComponent,
+    RegistrarTiempoComponent
   ],
   imports: [
     BrowserModule,
