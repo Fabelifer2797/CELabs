@@ -1,0 +1,69 @@
+<h4>Generar  Reporte  de Avería</h4>
+<hr>
+<form autocomplete="off">
+
+
+    <div class="form-group row">
+        <label class="col-4 col-form-label">Reportes generados </label>
+        <div class="input-group col-md-4">
+            <button type="button" class="btn btn-success"  [routerLink] = "['/reportesGeneradosAverias']">
+                Visualizar
+            </button>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Número de laboratorio</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="number"
+                placeholder="Número de laboratorio">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Aula</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="text"
+                placeholder="Código del aula">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Activo averiado</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="text"
+                placeholder="Nombre del activo">
+        </div>
+    </div>
+  
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Descripción</label>
+        <div class="col-8">
+            <textarea class="form-control" rows="3"></textarea>
+        </div>
+    </div>  
+
+
+
+  <div class="form-group row">
+    <label class="col-2 col-form-label">&nbsp;</label>
+    <div class="input-group col-md-4">
+      <button type="submit" class="btn btn-outline-primary btn-block" [routerLink] = "['/homeOperador']">
+        Enviar  reporte
+      </button>
+    </div>
+    <div class="input-group col-md-4">
+      <button type="button" class="btn btn-outline-danger btn-block">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+
+</form>
