@@ -17,6 +17,8 @@ import { ContenidoPrincipalComponent } from './componentes/compartidos/contenido
 import { ReservaLabComponent } from './componentes/operador/reserva-lab/reserva-lab.component';
 import { ReporteAveriaComponent } from './componentes/operador/reporte-averia/reporte-averia.component';
 import { ReportesGeneradosAveriasComponent } from './componentes/operador/reportes-generados-averias/reportes-generados-averias.component';
+import { ReporteInventarioComponent } from './componentes/operador/reporte-inventario/reporte-inventario.component';
+import { ReportesGeneradosInventarioComponent } from './componentes/operador/reportes-generados-inventario/reportes-generados-inventario.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +30,9 @@ import { ReportesGeneradosAveriasComponent } from './componentes/operador/report
     ContenidoPrincipalComponent,
     ReservaLabComponent,
     ReporteAveriaComponent,
-    ReportesGeneradosAveriasComponent
+    ReportesGeneradosAveriasComponent,
+    ReporteInventarioComponent,
+    ReportesGeneradosInventarioComponent
   ],
   imports: [
     BrowserModule,
