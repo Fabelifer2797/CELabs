@@ -12,13 +12,17 @@ import { AppComponent } from './app.component';
 import { NavBarComponent } from './componentes/compartidos/nav-bar/nav-bar.component';
 import { HomeAdminComponent } from './componentes/administrador/home-admin/home-admin.component';
 import { CalendarioComponent } from './componentes/compartidos/calendario/calendario.component';
+import { HomeOperadorComponent } from './componentes/operador/home-operador/home-operador.component';
+import { ContenidoPrincipalComponent } from './componentes/compartidos/contenido-principal/contenido-principal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NavBarComponent,
     HomeAdminComponent,
-    CalendarioComponent
+    CalendarioComponent,
+    HomeOperadorComponent,
+    ContenidoPrincipalComponent
   ],
   imports: [
     BrowserModule,
