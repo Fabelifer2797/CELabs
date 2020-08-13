@@ -20,6 +20,8 @@ import { ReportesGeneradosAveriasComponent } from './componentes/operador/report
 import { ReporteInventarioComponent } from './componentes/operador/reporte-inventario/reporte-inventario.component';
 import { ReportesGeneradosInventarioComponent } from './componentes/operador/reportes-generados-inventario/reportes-generados-inventario.component';
 import { RegistrarTiempoComponent } from './componentes/operador/registrar-tiempo/registrar-tiempo.component';
+import { PerfilUsuarioComponent } from './componentes/compartidos/perfil-usuario/perfil-usuario.component';
+import { ConfigurarCuentaComponent } from './componentes/compartidos/configurar-cuenta/configurar-cuenta.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +36,9 @@ import { RegistrarTiempoComponent } from './componentes/operador/registrar-tiemp
     ReportesGeneradosAveriasComponent,
     ReporteInventarioComponent,
     ReportesGeneradosInventarioComponent,
-    RegistrarTiempoComponent
+    RegistrarTiempoComponent,
+    PerfilUsuarioComponent,
+    ConfigurarCuentaComponent
   ],
   imports: [
     BrowserModule,

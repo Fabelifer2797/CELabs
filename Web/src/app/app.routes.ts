@@ -8,8 +8,8 @@ import {ReportesGeneradosAveriasComponent} from './componentes/operador/reportes
 import { ReporteInventarioComponent } from './componentes/operador/reporte-inventario/reporte-inventario.component';
 import { ReportesGeneradosInventarioComponent  } from './componentes/operador/reportes-generados-inventario/reportes-generados-inventario.component';
 import { RegistrarTiempoComponent } from './componentes/operador/registrar-tiempo/registrar-tiempo.component';
-
-
+import {PerfilUsuarioComponent  } from './componentes/compartidos/perfil-usuario/perfil-usuario.component';
+import { ConfigurarCuentaComponent } from './componentes/compartidos/configurar-cuenta/configurar-cuenta.component';
 
 const APP_ROUTES: Routes = [
     {path: 'homeOperador',component:HomeOperadorComponent},
@@ -21,6 +21,8 @@ const APP_ROUTES: Routes = [
     {path:'reporteInventario',component:ReporteInventarioComponent},
     {path:'reportesGeneradosInventario',component:ReportesGeneradosInventarioComponent},
     {path:'registrarTiempo',component:RegistrarTiempoComponent},
+    {path:'perfilUsuario',component:PerfilUsuarioComponent},
+    {path:'configurarCuenta',component:ConfigurarCuentaComponent},
     {path: '**', pathMatch: 'full', redirectTo: 'homeOperador'}
 ];
 
