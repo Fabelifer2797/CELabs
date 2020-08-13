@@ -1,0 +1,42 @@
+<h4>Registrar tiempo trabajado</h4>
+<hr>
+<form autocomplete="off">
+
+
+    <div class="form-group row">
+      <label class="col-2 col-form-label">Hora de inicio</label>
+      <div class="col-8">
+
+        <input class="form-control"
+               type="time">
+      </div>
+    </div>
+
+
+    <div class="form-group row">
+      <label class="col-2 col-form-label">Hora de finalización</label>
+      <div class="col-8">
+
+        <input class="form-control"
+               type="time">
+      </div>
+    </div>
+
+
+
+  <div class="form-group row">
+    <label class="col-2 col-form-label">&nbsp;</label>
+    <div class="input-group col-md-4">
+      <button type="submit" class="btn btn-outline-primary btn-block" [routerLink] = "['/homeOperador']">
+        Enviar Reporte
+      </button>
+    </div>
+    <div class="input-group col-md-4">
+      <button type="button" class="btn btn-outline-danger btn-block">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+
+</form>
