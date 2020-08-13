@@ -1,0 +1,81 @@
+<h4>Configurar cuenta</h4>
+<hr>
+<form autocomplete="off">
+
+    
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Nombre:</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="text"
+                value="Jose"
+                placeholder="Inserte su nombre">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Apellidos:</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="text"
+                value="Perez"
+                placeholder="Inserte sus apellidos">
+        </div>
+    </div>
+
+    <div class="form-group row">
+      <label class="col-2 col-form-label">Cédula/Carnet:</label>
+      <div class="col-8">
+
+        <input class="form-control"
+               type="number"
+               value="123456789"
+               readonly>
+      </div>
+    </div>
+
+
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Correo:</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="email"
+                value="abc@gmail.com"
+                readonly>
+        </div>
+    </div>
+
+
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Teléfono:</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="number"
+                value="88888888"
+                placeholder="Inserte su número de teléfono">
+        </div>
+    </div>
+  
+
+
+
+  <div class="form-group row">
+    <label class="col-2 col-form-label">&nbsp;</label>
+    <div class="input-group col-md-4">
+      <button type="submit" class="btn btn-outline-primary btn-block" [routerLink] = "['/homeOperador']">
+        Guardar
+      </button>
+    </div>
+    <div class="input-group col-md-4">
+      <button type="button" class="btn btn-outline-danger btn-block">
+        Eliminar Cuenta
+      </button>
+    </div>
+  </div>
+
+
+</form>
