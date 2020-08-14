@@ -3,7 +3,7 @@
 
 <h4 class="text-center">Reservar Laboratorio</h4>
 <hr>
-<form autocomplete="off">
+<form autocomplete="off"  [formGroup]="formReserva" (ngSubmit)="guardar()">
 
   
 
@@ -13,7 +13,12 @@
 
         <input class="form-control"
                type="number"
-               placeholder="Cédula">
+               placeholder="Cédula"
+               formControlName="_idUsuarioReserva"
+               [class.is-invalid]="idUsuarioNoValido">
+               <small *ngIf="idUsuarioNoValido" class="text-danger">
+                Debe ingresar una cédula válida
+              </small>
       </div>
     </div>
 
@@ -22,7 +27,8 @@
       <div class="col-8">
 
         <input class="form-control"
-               type="date">
+               type="date"
+               formControlName="_fechaReserva">
       </div>
     </div>
 
@@ -31,7 +37,10 @@
       <div class="col-8">
 
         <input class="form-control"
-               type="time">
+               type="time"
+               formControlName="_horaInicio"
+               value="00:00:00"
+               step="1">
       </div>
     </div>
 
@@ -41,17 +50,32 @@
       <div class="col-8">
 
         <input class="form-control"
-               type="time">
+               type="time"
+               formControlName="_horaFinal"
+               value="00:00:00"
+               step="1">
       </div>
     </div>
 
     <div class="form-group row">
-        <label class="col-2 col-form-label">Nombre del curso</label>
+        <label class="col-2 col-form-label">Número de laboratorio</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="number"
+                placeholder="Laboratorio"
+                formControlName="_idLaboratorio">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Motivo de la reservación</label>
         <div class="col-8">
 
             <input class="form-control"
                 type="text"
-                placeholder="Nombre del curso">
+                placeholder="Motivo"
+                formControlName="_motivo">
         </div>
     </div>
 
@@ -60,28 +84,19 @@
         <div class="col-8">
 
             <input class="form-control"
-                type="text"
-                placeholder="Código del curso">
+                type="number"
+                placeholder="Código del curso"
+                formControlName="_idCurso">
         </div>
     </div>
   
-
-    <div class="form-group row">
-        <label class="col-2 col-form-label">Motivo de la reservación</label>
-        <div class="col-8">
-
-            <input class="form-control"
-                type="text"
-                placeholder="Motivo">
-        </div>
-    </div>
 
 
 
   <div class="form-group row">
     <label class="col-2 col-form-label">&nbsp;</label>
     <div class="input-group col-md-4">
-      <button type="submit" class="colorOutlineButtons btn btn-outline-primary btn-block" [routerLink] = "['/homeOperador']">
+      <button type="submit" class="colorOutlineButtons btn btn-outline-primary btn-block" >
         Confirmar Reserva
       </button>
     </div>
@@ -96,3 +111,14 @@
 </form>
 </div>
 
+<hr>
+
+<pre>
+  Estado: {{formReserva.valid}}
+  <br>
+  Status: {{formReserva.status}}
+</pre>
+
+<pre>
+    {{formReserva.value | json}}
+</pre>

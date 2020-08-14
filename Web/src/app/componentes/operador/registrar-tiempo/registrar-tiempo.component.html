@@ -3,7 +3,7 @@
 
 <h4 class="text-center">Registrar tiempo trabajado</h4>
 <hr>
-<form autocomplete="off">
+<form autocomplete="off"  [formGroup]="formTiempo" (ngSubmit)="guardar()">
 
 
     <div class="form-group row">
@@ -11,7 +11,14 @@
       <div class="col-8">
 
         <input class="form-control"
-               type="time">
+               type="time"
+               formControlName="_horaInicio"
+               [class.is-invalid]="horaInicioNoValida"
+               value="00:00:00"
+               step="1">
+               <small *ngIf="horaInicioNoValida" class="text-danger">
+                Debe ingresar una hora de inicio válida
+              </small>
       </div>
     </div>
 
@@ -21,8 +28,23 @@
       <div class="col-8">
 
         <input class="form-control"
-               type="time">
+               type="time"
+               formControlName="_horaFinal"
+               value="00:00:00"
+               step="1">
       </div>
+    </div>
+
+
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Actividades realizadas</label>
+        <div class="col-8">
+
+            <input class="form-control"
+                type="text"
+                placeholder="Actividades"
+                formControlName="_actividades">
+        </div>
     </div>
 
 
@@ -30,7 +52,7 @@
   <div class="form-group row">
     <label class="col-2 col-form-label">&nbsp;</label>
     <div class="input-group col-md-4">
-      <button type="submit" class="colorOutlineButtons btn btn-outline-primary btn-block" [routerLink] = "['/homeOperador']">
+      <button type="submit" class="colorOutlineButtons btn btn-outline-primary btn-block">
         Enviar Reporte
       </button>
     </div>
@@ -44,3 +66,16 @@
 
 </form>
 </div>
+
+
+<hr>
+
+<pre>
+  Estado: {{formTiempo.valid}}
+  <br>
+  Status: {{formTiempo.status}}
+</pre>
+
+<pre>
+    {{formTiempo.value | json}}
+</pre>

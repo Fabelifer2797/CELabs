@@ -3,7 +3,7 @@
 
 <h4 class="text-center">Crear cuenta operador</h4>
 <hr>
-<form autocomplete="off">
+<form autocomplete="off" [formGroup]="formOperador" (ngSubmit)="guardar()">
 
     
     <div class="form-group row">
@@ -12,8 +12,14 @@
 
             <input class="form-control"
                 type="text"
-                placeholder="Inserte el nombre">
-        </div>
+                placeholder="Inserte el nombre"
+                formControlName="_nombre"
+               [class.is-invalid]="nombreNoValido">
+               <small *ngIf="nombreNoValido" class="text-danger">
+                Debe ingresar un nombre válido
+              </small>
+      </div>
+        
     </div>
 
     <div class="form-group row">
@@ -22,7 +28,8 @@
 
             <input class="form-control"
                 type="text"
-                placeholder="Inserte los apellidos">
+                placeholder="Inserte los apellidos"
+                formControlName="_apellidos">
         </div>
     </div>
 
@@ -31,8 +38,9 @@
       <div class="col-8">
 
         <input class="form-control"
-               type="number"
-                placeholder="Inserte el carnet">
+               type="text"
+                placeholder="Inserte el carnet"
+                formControlName="_idXTEC">
       </div>
     </div>
 
@@ -43,7 +51,8 @@
 
             <input class="form-control"
                 type="email"
-                placeholder="Inserte el correo">
+                placeholder="Inserte el correo"
+                formControlName="_email">
         </div>
     </div>
 
@@ -53,10 +62,11 @@
         <div class="col-8">
 
             <input class="form-control"
-                type="number"
-                placeholder="Inserte el número de teléfono">
+                type="text"
+                placeholder="Inserte el número de teléfono"
+                formControlName="_telefono">
         </div>
-    </div>
+    </div> 
   
 
 
@@ -64,7 +74,7 @@
   <div class="form-group row">
     <label class="col-2 col-form-label">&nbsp;</label>
     <div class="input-group col-md-4">
-      <button type="submit" class="colorOutlineButtons btn btn-outline-primary btn-block" [routerLink] = "['/homeAdmin']">
+      <button type="submit" class="colorOutlineButtons btn btn-outline-primary btn-block" >
         Crear cuenta
       </button>
     </div>
@@ -74,3 +84,15 @@
 </form>
 </div>
 
+
+<hr>
+
+<pre>
+  Estado: {{formOperador.valid}}
+  <br>
+  Status: {{formOperador.status}}
+</pre>
+
+<pre>
+    {{formOperador.value | json}}
+</pre>

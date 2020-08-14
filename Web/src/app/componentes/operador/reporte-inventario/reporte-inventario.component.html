@@ -3,7 +3,7 @@
 
 <h4 class="text-center">Generar  Reporte de Inventario</h4>
 <hr>
-<form autocomplete="off">
+<form autocomplete="off" [formGroup]="formInventario" (ngSubmit)="guardar()">
 
 
     <div class="form-group row">
@@ -21,19 +21,15 @@
 
             <input class="form-control"
                 type="number"
-                placeholder="Número de laboratorio">
+                placeholder="Número de laboratorio"
+                formControlName="_idLaboratorio"
+               [class.is-invalid]="idLaboratorioNoValido">
+               <small *ngIf="idLaboratorioNoValido" class="text-danger">
+                Debe ingresar una número de  laboratorio válido
+              </small>
         </div>
     </div>
 
-    <div class="form-group row">
-        <label class="col-4 col-form-label">Aula</label>
-        <div class="col-8">
-
-            <input class="form-control"
-                type="text"
-                placeholder="Código del aula">
-        </div>
-    </div>
 
     <div class="form-group row">
         <label class="col-4 col-form-label">Cantidad de computadoras completas</label>
@@ -41,7 +37,8 @@
 
             <input class="form-control"
                 type="number"
-                placeholder="Computadoras completas">
+                placeholder="Computadoras completas"
+                 formControlName="_computadorasC">
         </div>
     </div>
 
@@ -51,7 +48,8 @@
 
             <input class="form-control"
                 type="number"
-                placeholder="Computadoras incompletas">
+                placeholder="Computadoras incompletas"
+                 formControlName="_computadorasI">
         </div>
     </div>
 
@@ -62,7 +60,8 @@
 
             <input class="form-control"
                 type="number"
-                placeholder="Proyectores">
+                placeholder="Proyectores"
+                 formControlName="_proyectores">
         </div>
     </div>
 
@@ -72,7 +71,8 @@
 
             <input class="form-control"
                 type="number"
-                placeholder="Proyectores">
+                placeholder="Proyectores"
+                 formControlName="_sillas">
         </div>
     </div>
 
@@ -82,7 +82,8 @@
 
             <input class="form-control"
                 type="number"
-                placeholder="Extintores">
+                placeholder="Extintores"
+                 formControlName="_extintores">
         </div>
     </div>
 
@@ -91,7 +92,7 @@
   <div class="form-group row mt-5">
     <label class="col-2 col-form-label">&nbsp;</label>
     <div class="input-group col-md-4">
-      <button type="submit" class="colorOutlineButtons btn btn-outline-primary btn-block" [routerLink] = "['/homeOperador']">
+      <button type="submit" class="colorOutlineButtons btn btn-outline-primary btn-block">
         Enviar  reporte
       </button>
     </div>
@@ -105,4 +106,16 @@
 
 </form>
 </div>
+
+<hr>
+
+<pre>
+  Estado: {{formInventario.valid}}
+  <br>
+  Status: {{formInventario.status}}
+</pre>
+
+<pre>
+    {{formInventario.value | json}}
+</pre>
 
