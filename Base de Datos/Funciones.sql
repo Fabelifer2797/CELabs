@@ -409,11 +409,8 @@ CREATE OR REPLACE FUNCTION actualizarSolicitudRTT(
     _idUsuario INT,
     _idEstadoSolicitud INT
 )
-RETURNS TABLE(
-    codigoCELabs INT,
-    idXTEC TEXT,
-    tiempoTotal INTERVAL
-             ) AS $$
+RETURNS json AS $$
+    DECLARE j json;
     BEGIN
         INSERT INTO SolicitudRTT(idreportett, idusuario, fechahorarespuesta, idestadosolicitud) VALUES
         (_idReporteTT, _idUsuario, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idEstadoSolicitud);
@@ -422,16 +419,15 @@ RETURNS TABLE(
         SET idestadosolicitud = _idEstadoSolicitud
         WHERE idreportett = _idReporteTT;
 
-        RETURN QUERY
-        SELECT * FROM   (SELECT R.idestadosolicitud + 5, U.idXTEC FROM ReporteTT R  -- 7: Solicitud Aprobada, 8: Solicitud Rechazada
+        SELECT to_json(r) INTO j FROM (SELECT * FROM   (SELECT R.idestadosolicitud + 5 AS codigoCELabs, U.idXTEC FROM ReporteTT R  -- 7: Solicitud Aprobada, 8: Solicitud Rechazada
                         INNER JOIN Operador O on R.idoperador = O.idoperador
                         INNER JOIN Usuario U on o.idusuario = U.idusuario
                         WHERE idreportett = _idReporteTT) a,
 
-                        (SELECT RTT.horafinal - RTT.horainicio FROM reportett RTT
-                        WHERE RTT.idreportett = _idReporteTT AND idestadosolicitud = 2) b ;
+                        (SELECT RTT.horafinal - RTT.horainicio AS tiempototal FROM reportett RTT
+                        WHERE RTT.idreportett = _idReporteTT AND idestadosolicitud = 2) b) r ;
 
-
+        RETURN j;
     END;
     $$
 LANGUAGE plpgsql;
@@ -706,10 +702,10 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION getIdRol(
     _idUsuario INT
 )RETURNS INT AS $$
-    DECLARE idRol INT;
-            rol INT;
+    DECLARE idRol INT = 0;
+            rol INT = 0;
     BEGIN
-        SELECT rolactual INTO rol FROM Usuario
+        SELECT CAST(rolactual AS INT) INTO rol FROM Usuario
         WHERE idusuario = _idUsuario;
 
         IF rol = 1 THEN
@@ -797,29 +793,21 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION verReportesInventario(
     _pagina INT
 )
-RETURNS TABLE(
-    idreporteinv INT,
-    fechaHora TIMESTAMP,
-    nombreOperador TEXT,
-    apellidosOperador TEXT,
-    codigoLab TEXT,
-    computadorasC INT,
-    computadorasI INT,
-    proyectores INT,
-    sillas INT,
-    extintores INT
-             ) AS $$
+RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
+            j json;
     BEGIN
-        RETURN QUERY
-        SELECT RI.idresporteinv, RI.fechahora, U.nombre, U.apellidos, L.codigo, RI.computadorasc, RI.computadorasi, RI.proyectores, RI.sillas, RI.extintores
-        FROM ReporteInventario RI
-        INNER JOIN Operador O on RI.idoperador = O.idoperador
-        INNER JOIN Usuario U on O.idusuario = U.idusuario
-        INNER JOIN Laboratorio L on RI.idlaboratorio = L.idlaboratorio
-        ORDER BY fechahora DESC
-        LIMIT 10
-        OFFSET _offset;
+
+        SELECT json_agg(r) into j FROM (SELECT RI.idresporteinv, RI.fechahora, U.nombre AS nombreOperador, U.apellidos AS apellidosOperador, L.codigo AS codigoLab, RI.computadorasc, RI.computadorasi, RI.proyectores, RI.sillas, RI.extintores
+                FROM ReporteInventario RI
+                INNER JOIN Operador O on RI.idoperador = O.idoperador
+                INNER JOIN Usuario U on O.idusuario = U.idusuario
+                INNER JOIN Laboratorio L on RI.idlaboratorio = L.idlaboratorio
+                ORDER BY fechahora DESC
+                LIMIT 10
+                OFFSET _offset) r;
+
+        RETURN j;
     END;
 $$
 LANGUAGE plpgsql;
@@ -827,52 +815,41 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION verReportesAverias(
     _pagina INT
 )
-RETURNS TABLE(
-    fechaHora TIMESTAMP,
-    idReporteAveria INT,
-    idOperador INT,
-    nombreOperador TEXT,
-    apellidoOperador TEXT,
-    codigoLab TEXT,
-    activo TEXT,
-    estado TEXT,
-    descripcion TEXT
-             ) AS $$
+RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
+            j json;
     BEGIN
-        RETURN QUERY
-        SELECT RA.fechahora, RA.idreporteaveria, U.nombre, U.apellidos, L.codigo, RA.activo, E.info, RA.descripcion
-        FROM ReporteAveria RA
-        INNER JOIN Operador O on RA.idoperador = O.idoperador
-        INNER JOIN Usuario U on O.idusuario = U.idusuario
-        INNER JOIN Laboratorio L on RA.idlaboratorio = L.idlaboratorio
-        INNER JOIN estadoaveria E on RA.idestadoaveria = E.idestadoaveria
-        ORDER BY E.idestadoaveria, RA.fechahora DESC
-        LIMIT 10
-        OFFSET _offset;
+
+        SELECT json_agg(r) into j FROM (SELECT RA.fechahora, RA.idreporteaveria, U.nombre AS nombreOperador, U.apellidos AS apellidosOperador, L.codigo AS codigoLab, RA.activo, E.info AS estado, RA.descripcion
+                FROM ReporteAveria RA
+                INNER JOIN Operador O on RA.idoperador = O.idoperador
+                INNER JOIN Usuario U on O.idusuario = U.idusuario
+                INNER JOIN Laboratorio L on RA.idlaboratorio = L.idlaboratorio
+                INNER JOIN estadoaveria E on RA.idestadoaveria = E.idestadoaveria
+                ORDER BY E.idestadoaveria, RA.fechahora DESC
+                LIMIT 10
+                OFFSET _offset) r;
+
+        RETURN j;
     END;
     $$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION verHorasReservadasTR(
 )
-RETURNS TABLE(
-    idLab INT,
-    codigoLab TEXT,
-    aulaLab TEXT,
-    codigoNombreCurso TEXT,
-    horaInicio TIME,
-    horaFinal TIME
-) AS $$
+RETURNS json AS $$
     DECLARE _now TIMESTAMP = CURRENT_TIMESTAMP AT TIME ZONE 'CST';
+            j json;
     BEGIN
-        RETURN QUERY
-        SELECT L.idlaboratorio, L.codigo, L.aula, C.codigoNombre, R.horainicio, R.horafinal
-        FROM Reserva R
-        INNER JOIN Laboratorio L on R.idlaboratorio = L.idlaboratorio
-        INNER JOIN Curso C on R.idcurso = C.idcurso
-        WHERE R.fechareserva = _now::DATE AND R.horainicio < _now::TIME AND R.horafinal > _now::TIME AND R.idestadoreserva = 1
-        ORDER BY L.idlaboratorio;
+
+        SELECT json_agg(r) into j FROM (SELECT L.idlaboratorio, L.codigo AS codigolab, L.aula AS aulalab, C.codigoNombre AS codigonombrecurso, R.horainicio, R.horafinal
+                FROM Reserva R
+                INNER JOIN Laboratorio L on R.idlaboratorio = L.idlaboratorio
+                INNER JOIN Curso C on R.idcurso = C.idcurso
+                WHERE R.fechareserva = _now::DATE AND R.horainicio < _now::TIME AND R.horafinal > _now::TIME AND R.idestadoreserva = 1
+                ORDER BY L.idlaboratorio) r;
+
+        RETURN j;
     END;
 
 $$
@@ -905,50 +882,41 @@ $$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION verEstadosAveria()
-RETURNS TABLE(
-    idEstadoAveria INT,
-    info TEXT
-) AS $$
+RETURNS json AS $$
+    DECLARE j json;
     BEGIN
-        RETURN QUERY
-        SELECT E.idestadoaveria, E.info FROM EstadoAveria E;
+        SELECT json_agg(r) into j FROM (SELECT E.idestadoaveria, E.info FROM EstadoAveria E) r;
+        RETURN j;
     END;
 $$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION verEstadosSolicitud()
-RETURNS TABLE(
-    idEstadoSolicitud INT,
-    info TEXT
-) AS $$
+RETURNS json AS $$
+    DECLARE j json;
     BEGIN
-        RETURN QUERY
-        SELECT E.idEstadoSolicitud, E.info FROM EstadoSolicitud E;
+        SELECT json_agg(r) into j FROM (SELECT E.idEstadoSolicitud, E.info FROM EstadoSolicitud E) r;
+        RETURN j;
     END;
 $$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION verLaboratorios()
-RETURNS TABLE(
-    idLab INT,
-    codigo TEXT,
-    aula TEXT
-) AS $$
+RETURNS json AS $$
+    DECLARE j json;
     BEGIN
-        RETURN QUERY
-        SELECT L.idlaboratorio, L.codigo, L.aula FROM Laboratorio L;
+        SELECT json_agg(r) into j FROM (SELECT L.idlaboratorio AS idlab, L.codigo, L.aula FROM Laboratorio L) r;
+        RETURN j;
     END;
 $$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION verCursos()
-RETURNS TABLE(
-    idCurso INT,
-    codigoNombre TEXT
-) AS $$
+RETURNS json AS $$
+    DECLARE j json;
     BEGIN
-        RETURN QUERY
-        SELECT idCurso, codigoNombre FROM Curso;
+        SELECT json_agg(r) into j FROM (SELECT idCurso, codigoNombre FROM Curso) r;
+        RETURN j;
     END;
 $$
 LANGUAGE plpgsql;
@@ -956,24 +924,18 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION verSolicitudesCuenta(
     _pagina INT
 )
-RETURNS TABLE(
-    idNuevaCuenta INT,
-    fechaHora TIMESTAMP,
-    nombre TEXT,
-    apellidos TEXT,
-    idXTEC TEXT,
-    email TEXT
-) AS $$
+RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
+            j json;
     BEGIN
-        RETURN QUERY
-        SELECT NC.idcuenta, NC.fechahora, U.nombre, U.apellidos, U.idxtec, U.email
-        FROM NuevaCuenta NC
-        INNER JOIN Usuario U on NC.idusuario = U.idusuario
-        WHERE NC.idestadosolicitud = 1
-        ORDER BY NC.fechahora DESC
-        LIMIT 10
-        OFFSET _offset;
+        SELECT json_agg(r) into j FROM (SELECT NC.idcuenta AS idNuevaCuenta, NC.fechahora, U.nombre, U.apellidos, U.idxtec, U.email
+                FROM NuevaCuenta NC
+                INNER JOIN Usuario U on NC.idusuario = U.idusuario
+                WHERE NC.idestadosolicitud = 1
+                ORDER BY NC.fechahora DESC
+                LIMIT 10
+                OFFSET _offset) r;
+        RETURN j;
     END;
     $$
 LANGUAGE plpgsql;
@@ -981,28 +943,19 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION verSolicitudesRTT(
     _pagina INT
 )
-RETURNS TABLE(
-    idReporteTT INT,
-    fechaHora TIMESTAMP,
-    idOperador INT,
-    nombre TEXT,
-    apellidos TEXT,
-    horaInicio TIME,
-    horaFinal TIME,
-    actividades TEXT
-) AS $$
+RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
+            j json;
     BEGIN
-        RETURN QUERY
-        SELECT R.idreportett, R.fechahora, O.idoperador, U.nombre, U.apellidos, R.horainicio, R.horafinal, R.actividades
-        FROM ReporteTT R
-        INNER JOIN Operador O on R.idoperador = O.idoperador
-        INNER JOIN Usuario U on O.idusuario = U.idusuario
-        WHERE R.idestadosolicitud = 1
-        ORDER BY R.fechahora DESC
-        LIMIT 10
-        OFFSET _offset;
-
+        SELECT json_agg(r) into j FROM (SELECT R.idreportett, R.fechahora, O.idoperador, U.nombre, U.apellidos, R.horainicio, R.horafinal, R.actividades
+                FROM ReporteTT R
+                INNER JOIN Operador O on R.idoperador = O.idoperador
+                INNER JOIN Usuario U on O.idusuario = U.idusuario
+                WHERE R.idestadosolicitud = 1
+                ORDER BY R.fechahora DESC
+                LIMIT 10
+                OFFSET _offset) r;
+        RETURN j;
     END;
     $$
 LANGUAGE plpgsql;
@@ -1010,31 +963,20 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION verSolicitudesPalmada(
     _pagina INT
 )
-RETURNS TABLE(
-    idPalmada INT,
-    fechaHoraSolicitud TIMESTAMP,
-    idOperador INT,
-    nombreOperador TEXT,
-    apellidosOperador TEXT,
-    fechaHoraI TIMESTAMP,
-    fechaHoraF TIMESTAMP,
-    motivo TEXT,
-    idLab INT,
-    codigoLab TEXT
-
-) AS $$
+RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
+            j json;
     BEGIN
-        RETURN QUERY
-        SELECT P.idpalmada, P.fechahorasolicitud, O.idoperador, U.nombre, U.apellidos, P.fechahorai, P.fechahoraf, P.motivo, L.idlaboratorio, L.codigo
-        FROM Palmada P
-        INNER JOIN Laboratorio L on P.idlaboratorio = L.idlaboratorio
-        INNER JOIN Operador O on P.idoperador = O.idoperador
-        INNER JOIN Usuario U on O.idusuario = U.idusuario
-        WHERE P.idestadosolicitud = 1
-        ORDER BY P.fechahorasolicitud DESC
-        LIMIT 10
-        OFFSET _offset;
+        SELECT json_agg(r) into j FROM (SELECT P.idpalmada, P.fechahorasolicitud, O.idoperador, U.nombre AS nombreOperador, U.apellidos AS apellidosOperador, P.fechahorai, P.fechahoraf, P.motivo, L.idlaboratorio AS idLab, L.codigo AS codigolab
+                FROM Palmada P
+                INNER JOIN Laboratorio L on P.idlaboratorio = L.idlaboratorio
+                INNER JOIN Operador O on P.idoperador = O.idoperador
+                INNER JOIN Usuario U on O.idusuario = U.idusuario
+                WHERE P.idestadosolicitud = 1
+                ORDER BY P.fechahorasolicitud DESC
+                LIMIT 10
+                OFFSET _offset) r;
+        RETURN j;
     END;
     $$
 LANGUAGE plpgsql;
@@ -1043,24 +985,16 @@ CREATE OR REPLACE FUNCTION verReservas(
     _fechaLunes DATE,
     _fechaDomingo DATE,
     _idLaboratorio INT
-)RETURNS TABLE(
-    idReserva INT,
-    horaI TIME,
-    horaF TIME,
-    fechaReserva DATE,
-    idCurso INT,
-    codigoNombreCurso TEXT,
-    idEstadoReserva INT
-) AS $$
+)RETURNS json AS $$
+    DECLARE j json;
     BEGIN
-        RETURN QUERY
-        SELECT R.idreserva, R.horainicio, R.horafinal, R.fechareserva, C.idcurso, C.codigoNombre, R.idestadoreserva
-        FROM Reserva R
-        INNER JOIN laboratorio l on R.idlaboratorio = l.idlaboratorio
-        INNER JOIN curso c on R.idcurso = c.idcurso
-        WHERE R.fechareserva >= _fechaLunes AND R.fechareserva <= _fechaDomingo AND (R.idestadoreserva = 1 OR R.idestadoreserva = 2) AND L.idlaboratorio = _idLaboratorio
-        ORDER BY R.fechareserva;
-
+        SELECT json_agg(r) into j FROM (SELECT R.idreserva, R.horainicio, R.horafinal, R.fechareserva, C.idcurso, C.codigoNombre AS codigonombrecurso, R.idestadoreserva
+                FROM Reserva R
+                INNER JOIN laboratorio l on R.idlaboratorio = l.idlaboratorio
+                INNER JOIN curso c on R.idcurso = c.idcurso
+                WHERE R.fechareserva >= _fechaLunes AND R.fechareserva <= _fechaDomingo AND (R.idestadoreserva = 1 OR R.idestadoreserva = 2) AND L.idlaboratorio = _idLaboratorio
+                ORDER BY R.fechareserva) r;
+        RETURN  j;
     END;
     $$
 LANGUAGE plpgsql;
@@ -1070,26 +1004,18 @@ CREATE OR REPLACE FUNCTION verMisReservas(
     _fechaDomingo DATE,
     _idDocente INT,
     _idLaboratorio INT
-)RETURNS TABLE(
-    idReserva INT,
-    horaI TIME,
-    horaF TIME,
-    fechaReserva DATE,
-    idCurso INT,
-    codigoNombreCurso TEXT,
-    idEstadoReserva INT
-) AS $$
+)RETURNS json AS $$
+    DECLARE j json;
     BEGIN
-        RETURN QUERY
-        SELECT R.idreserva, R.horainicio, R.horafinal, R.fechareserva, C.idcurso, C.codigoNombre, R.idestadoreserva
-        FROM Reserva R
-        INNER JOIN Laboratorio L on R.idlaboratorio = L.idlaboratorio
-        INNER JOIN Curso C on R.idcurso = C.idcurso
-        INNER JOIN Usuario U on R.idusuario = U.idusuario
-        INNER JOIN Docente D on U.idusuario = D.idusuario
-        WHERE R.fechareserva >= _fechaLunes AND R.fechareserva <= _fechaDomingo AND D.iddocente = _idDocente AND L.idlaboratorio = _idLaboratorio
-        ORDER BY R.fechareserva;
-
+        SELECT json_agg(r) into j FROM (SELECT R.idreserva, R.horainicio, R.horafinal, R.fechareserva, C.idcurso, C.codigoNombre AS codigonombrecurso, R.idestadoreserva
+                FROM Reserva R
+                INNER JOIN Laboratorio L on R.idlaboratorio = L.idlaboratorio
+                INNER JOIN Curso C on R.idcurso = C.idcurso
+                INNER JOIN Usuario U on R.idusuario = U.idusuario
+                INNER JOIN Docente D on U.idusuario = D.idusuario
+                WHERE R.fechareserva >= _fechaLunes AND R.fechareserva <= _fechaDomingo AND D.iddocente = _idDocente AND L.idlaboratorio = _idLaboratorio
+                ORDER BY R.fechareserva) r;
+        RETURN j;
     END;
     $$
 LANGUAGE plpgsql;
@@ -1097,55 +1023,47 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION logIn(
     _idXTEC TEXT
 )
-RETURNS TABLE(
-        idUsuario INT,
-        rolActual INT,
-        idRol INT
-             ) AS $$
+RETURNS json AS $$
     DECLARE _idUsuario INT;
+            j json;
     BEGIN
         SELECT buscarIdUsuario(_idXTEC) INTO _idUsuario;
 
-        RETURN QUERY
-        SELECT * FROM (SELECT U.idusuario, U.rolactual FROM Usuario U
-                        WHERE U.idusuario = 1) a,
-
-                     (SELECT getIdRol(1) AS idRol) b;
-
-
+        SELECT json_agg(r) into j FROM (SELECT * FROM (SELECT U.idusuario, U.rolactual FROM Usuario U
+                                        WHERE U.idusuario = _idUsuario) a,
+                                        (SELECT getIdRol(_idUsuario) AS idRol) b) r;
+        RETURN j;
     END;$$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION verMiTT(
     _idOperador INT
-)RETURNS TABLE(
-    total INTERVAL
-              ) AS $$
+)RETURNS INTERVAL AS $$
+    DECLARE total INTERVAL;
     BEGIN
-        RETURN QUERY
-        SELECT SUM(RTT.horafinal - RTT.horainicio) FROM reportett RTT
+        SELECT SUM(RTT.horafinal - RTT.horainicio) INTO total FROM reportett RTT
         WHERE RTT.idoperador = _idOperador AND RTT.idestadosolicitud = 2;
+
+        RETURN total;
     END;$$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION verDashboardAdmin(
     _yearMonth TIMESTAMP
 )
-RETURNS TABLE(
-    promedioSatisfaccionMensual DOUBLE PRECISION,
-    promedioReservasDiariasMensuales DOUBLE PRECISION,
-    promedioPalmadasQuincenales DOUBLE PRECISION
-) AS $$
+RETURNS json AS $$
+    DECLARE j json;
     BEGIN
-        RETURN QUERY
-        SELECT * FROM (SELECT CAST((SUM(FS.valor)/COUNT(FS.idfsatisfaccion)) AS DOUBLE PRECISION) FROM fsatisfaccion FS
-                       WHERE EXTRACT(YEAR FROM FS.fechahora) = EXTRACT(YEAR FROM _yearMonth) AND EXTRACT(MONTH FROM FS.fechahora) = EXTRACT(MONTH FROM _yearMonth)) a,
+        SELECT json_agg(r) into j FROM (SELECT * FROM (SELECT CAST((SUM(FS.valor)/COUNT(FS.idfsatisfaccion)) AS DOUBLE PRECISION) AS promedioSatisfaccionMensual FROM fsatisfaccion FS
+                               WHERE EXTRACT(YEAR FROM FS.fechahora) = EXTRACT(YEAR FROM _yearMonth) AND EXTRACT(MONTH FROM FS.fechahora) = EXTRACT(MONTH FROM _yearMonth)) a,
 
-                      (SELECT  CAST(COUNT(R.idreserva)/30.0 AS DOUBLE PRECISION) FROM Reserva R
-                       WHERE EXTRACT(YEAR FROM R.fechareserva) = EXTRACT(YEAR FROM _yearMonth) AND EXTRACT(MONTH FROM R.fechareserva) = EXTRACT(MONTH FROM _yearMonth)) b,
+                              (SELECT  CAST(COUNT(R.idreserva)/30.0 AS DOUBLE PRECISION) AS promedioReservasDiariasMensuales FROM Reserva R
+                               WHERE EXTRACT(YEAR FROM R.fechareserva) = EXTRACT(YEAR FROM _yearMonth) AND EXTRACT(MONTH FROM R.fechareserva) = EXTRACT(MONTH FROM _yearMonth)) b,
 
-                      (SELECT  CAST(COUNT(P.idpalmada)/2.0 AS DOUBLE PRECISION) FROM Palmada P
-                       WHERE EXTRACT(YEAR FROM P.fechahorai) = EXTRACT(YEAR FROM _yearMonth) AND EXTRACT(MONTH FROM P.fechahorai) = EXTRACT(MONTH FROM _yearMonth)) c;
+                              (SELECT  CAST(COUNT(P.idpalmada)/2.0 AS DOUBLE PRECISION) AS promedioPalmadasQuincenales FROM Palmada P
+                               WHERE EXTRACT(YEAR FROM P.fechahorai) = EXTRACT(YEAR FROM _yearMonth) AND EXTRACT(MONTH FROM P.fechahorai) = EXTRACT(MONTH FROM _yearMonth)) c) r;
+
+    RETURN j;
     END;
     $$
 LANGUAGE plpgsql;
@@ -1162,3 +1080,5 @@ CREATE OR REPLACE FUNCTION responderFSatisfaccion(
     $$
 LANGUAGE plpgsql;
 ---------------------------------------------------------------
+
+
