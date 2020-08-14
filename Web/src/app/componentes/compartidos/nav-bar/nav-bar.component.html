@@ -1,4 +1,6 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<link rel="stylesheet" href="nav-bar.component.css">
+
+<nav class="colorNavbar navbar navbar-expand-lg navbar-dark">
   <a class="navbar-brand" >CELabs</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -7,7 +9,7 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item" routerLinkActive="active">
-        <a class="nav-link" [routerLink] = "['homeOperador']">Página Principal <span class="sr-only">(current)</span></a>
+        <a class="nav-link" [routerLink] = "['homeOperador']">Página Principal <span class="sr-only glyphicon glyphicon-home">(current)</span></a>
       </li>
       <li class="nav-item" routerLinkActive="active">
         <a class="nav-link" [routerLink] = "['calendario']">Calendario <span class="sr-only">(current)</span></a>
@@ -50,7 +52,7 @@
       </li>
     </ul>
     <form class="form-inline">
-        <button class="btn btn-outline-primary" type="button">Cerrar Sesión</button>
+        <button class="btn btn-outline-danger" type="button">Cerrar Sesión</button>
     </form>
   </div>
 </nav>
