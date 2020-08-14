@@ -61,7 +61,7 @@
       </button>
     </div>
     <div class="input-group col-md-4">
-      <button type="button" class="btn btn-outline-danger btn-block">
+      <button type="button" class="btn btn-outline-danger btn-block" [routerLink] = "['/homeAdmin']">
         Cancelar
       </button>
     </div>
@@ -72,14 +72,3 @@
 </div>
 
 
-<hr>
-
-<pre>
-  Estado: {{formAveria.valid}}
-  <br>
-  Status: {{formAveria.status}}
-</pre>
-
-<pre>
-    {{formAveria.value | json}}
-</pre>

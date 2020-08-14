@@ -97,7 +97,7 @@
       </button>
     </div>
     <div class="input-group col-md-4">
-      <button type="button" class="btn btn-outline-danger btn-block">
+      <button type="button" class="btn btn-outline-danger btn-block" [routerLink] = "['/homeAdmin']">
         Cancelar
       </button>
     </div>
@@ -107,15 +107,5 @@
 </form>
 </div>
 
-<hr>
 
-<pre>
-  Estado: {{formInventario.valid}}
-  <br>
-  Status: {{formInventario.status}}
-</pre>
-
-<pre>
-    {{formInventario.value | json}}
-</pre>
 

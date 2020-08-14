@@ -91,6 +91,13 @@ export class ReservaLabComponent implements OnInit {
 
         console.log(resp);
         Swal.close();
+        Swal.fire({
+          title: 'Éxito',
+          text: 'Se realizó con éxito la reserva',
+          icon: 'info',
+          allowOutsideClick: false
+        });
+        
 
       }, (err) => {
 

@@ -88,6 +88,12 @@ export class CrearCuentaOperadorComponent implements OnInit {
 
         console.log(resp);
         Swal.close();
+        Swal.fire({
+          title: 'Éxito',
+          text: 'Se creó con éxito la cuenta de operador',
+          icon: 'info',
+          allowOutsideClick: false
+        });
 
       }, (err) => {
 

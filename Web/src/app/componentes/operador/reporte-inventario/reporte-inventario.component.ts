@@ -91,6 +91,12 @@ export class ReporteInventarioComponent implements OnInit {
 
         console.log(resp);
         Swal.close();
+        Swal.fire({
+          title: 'Éxito',
+          text: 'Se realizó con éxito el reporte de inventario',
+          icon: 'info',
+          allowOutsideClick: false
+        });
 
       }, (err) => {
 

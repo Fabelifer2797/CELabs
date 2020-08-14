@@ -84,6 +84,12 @@ export class RegistrarTiempoComponent implements OnInit {
 
         console.log(resp);
         Swal.close();
+        Swal.fire({
+          title: 'Éxito',
+          text: 'Se realizó con éxito la agregación de horas',
+          icon: 'info',
+          allowOutsideClick: false
+        });
 
       }, (err) => {
 
