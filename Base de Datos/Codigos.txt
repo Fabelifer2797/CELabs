@@ -22,6 +22,7 @@ CELabs
 21: Reserva cancelada
 22: Palmada cancelada
 23: Gracias por responder el formulario de satisfaccion
+24: Palmada guardada y esperando aprobacion
 
 ----------------------------------------------------------------
 XTEC

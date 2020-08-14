@@ -1,6 +1,6 @@
 SET TIMEZONE TO 'GMT';
 
-CREATE OR REPLACE FUNCTION buscarIdUsuario(
+CREATE OR REPLACE FUNCTION buscarIdUsuario( -- Retorna el idUsuario que posee el idXTEC ingresado
     _idXtec TEXT
 )
 RETURNS INT AS $$
@@ -310,13 +310,13 @@ RETURNS INT AS $$
         WHERE fechainicio < _fechaReserva AND fechafinal > _fechaReserva;
 
         IF _idHorario IS NULL THEN
-            RETURN 16;
+            RETURN 16; -- Reserva fuera de las fechas de horario
         END IF;
 
         SELECT validarDiaSemana(_y, _m, _d) INTO diaSemana;
 
-        IF diaSemana = 0 OR diaSemana = 6 THEN
-            RETURN 17;
+        IF diaSemana = 0 OR diaSemana = 6 THEN -- Valida que la reserva se realice entre los dias y las horas del horario especificadas
+            RETURN 17; -- La reserva es en un fin de semana
         ELSEIF diaSemana = 1 THEN
             SELECT idhorario INTO _idHorario FROM Horario
             WHERE horainiciolunes < _horaInicio AND horafinallunes > _horaFinal;
@@ -335,7 +335,7 @@ RETURNS INT AS $$
         END IF;
 
         IF _idHorario IS NULL THEN
-            RETURN 18;
+            RETURN 18; -- Reservación fuera del horario de trabajo
         END IF;
 
         SELECT idreserva INTO idRes FROM Reserva
@@ -344,9 +344,9 @@ RETURNS INT AS $$
         IF idRes IS NULL THEN
             INSERT INTO Reserva(idoperador, idusuario, fechareserva, horainicio, horafinal, fechahorasolicitud, idlaboratorio, idestadoreserva, motivo, idcurso) VALUES
             (_idOperador, _idUsuarioReserva, _fechaReserva, _horaInicio, _horaFinal, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idLaboratorio, 1, _motivo, _idCurso);
-            RETURN 4;
+            RETURN 4; -- Nueva reserva creada
         ELSE
-            RETURN 5;
+            RETURN 5; -- Reserva choca con otra
         END IF;
     END
 $$
@@ -366,7 +366,7 @@ RETURNS INT AS $$
         INSERT INTO ReporteInventario(idoperador, fechahora, idlaboratorio, computadorasc, computadorasi, proyectores, sillas, extintores) VALUES
         (_idOperador, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idLaboratorio, _computadorasC, _computadorasI, _proyectores, _sillas, _extintores);
 
-        RETURN 6;
+        RETURN 6; -- Reporte creado
     END;
 
 $$
@@ -383,7 +383,7 @@ RETURNS INT AS $$
         INSERT INTO ReporteAveria(idoperador, idlaboratorio, idestadoaveria, fechahora, activo, descripcion) VALUES
         (_idOperador, _idLaboratorio, 1, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _activo, _descripcion);
 
-        RETURN 6;
+        RETURN 6; -- Reporte creado
     END;
 $$
 LANGUAGE plpgsql;
@@ -399,7 +399,7 @@ RETURNS INT AS $$
         INSERT INTO ReporteTT(idoperador, horainicio, horafinal, fechahora, idestadosolicitud, actividades) VALUES
         (_idOperador, _horaInicio, _horaFinal, CURRENT_TIMESTAMP AT TIME ZONE 'CST', 1, _actividades);
 
-        RETURN 6;
+        RETURN 6; -- Reporte creado
     END;
 $$
 LANGUAGE plpgsql;
@@ -412,13 +412,16 @@ CREATE OR REPLACE FUNCTION actualizarSolicitudRTT(
 RETURNS json AS $$
     DECLARE j json;
     BEGIN
+        -- Se guarda el registro del cambio de estado en la solicitud ingresada
         INSERT INTO SolicitudRTT(idreportett, idusuario, fechahorarespuesta, idestadosolicitud) VALUES
         (_idReporteTT, _idUsuario, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idEstadoSolicitud);
-
+        -- Se cambia el estado del reporte
         UPDATE ReporteTT
         SET idestadosolicitud = _idEstadoSolicitud
         WHERE idreportett = _idReporteTT;
 
+        -- Se retorna un json con el codigo de ejecucuióon (7: Solicitud Aprobada, 8: Solicitud Rechazada),
+        -- el carnet del operador que realizó el trabajo en el lab y las horas laboradas para ser enviados a la BD de Becas
         SELECT to_json(r) INTO j FROM (SELECT * FROM   (SELECT R.idestadosolicitud + 5 AS codigoCELabs, U.idXTEC FROM ReporteTT R  -- 7: Solicitud Aprobada, 8: Solicitud Rechazada
                         INNER JOIN Operador O on R.idoperador = O.idoperador
                         INNER JOIN Usuario U on o.idusuario = U.idusuario
@@ -439,9 +442,10 @@ CREATE OR REPLACE FUNCTION darSeguimientoAveria(
 )
 RETURNS INT AS $$
     BEGIN
+        -- Se guarda el registro del cambio de estado en la solicitud ingresada
         INSERT INTO SeguimientoAveria(idreporteaveria, idusuario, idestadoaveria, fechahora) VALUES
         (_idReporteAveria, _idUsuario, _idEstadoAveria, CURRENT_TIMESTAMP AT TIME ZONE 'CST');
-
+        -- Se cambia el estado del reporte
         UPDATE reporteaveria
         SET idestadoaveria = _idEstadoAveria
         WHERE idreporteaveria = _idReporteAveria;
@@ -474,12 +478,12 @@ RETURNS INT AS $$
         WHERE fechainicio < _fechaHoraI AND fechafinal > _fechaHoraI;
 
         IF _idHorario IS NULL THEN
-            RETURN 16;
+            RETURN 16; -- Reserva fuera de las fechas de horario
         END IF;
 
         SELECT validarDiaSemana(_y, _m, _d) INTO diaSemana;
 
-        IF diaSemana = 1 THEN
+        IF diaSemana = 1 THEN  -- Valida que la reserva se realice fuera de las horas del horario especificadas
             SELECT idhorario INTO _idHorario FROM Horario
             WHERE horainiciomartes > _horaF AND horafinallunes < _horaI;
         ELSEIF diaSemana = 2 THEN
@@ -500,7 +504,7 @@ RETURNS INT AS $$
         END IF;
 
         IF _idHorario IS NULL THEN
-            RETURN 19;
+            RETURN 19; -- La palmada no se puede reservar durante las horas de trabajo regulares
         END IF;
 
         SELECT idpalmada INTO idPal FROM Palmada
@@ -509,9 +513,9 @@ RETURNS INT AS $$
         IF idPal IS NULL THEN
             INSERT INTO Palmada(idoperador, idusuario, fechahorai, fechahoraf, fechahorasolicitud, idlaboratorio, idestadosolicitud, motivo) VALUES
             (_idOperador, _idUsuario, _fechaHoraI, _fechaHoraF, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idLaboratorio, 1, _motivo);
-            RETURN 4;
+            RETURN 24; -- Se crea la palmada
         ELSE
-            RETURN 5;
+            RETURN 5; -- La palmada presenta choque de horas con otra
         END IF;
     END;
     $$
@@ -524,6 +528,7 @@ CREATE OR REPLACE FUNCTION actualizarSolicitudPalmada(
 )
 RETURNS INT AS $$
     BEGIN
+        -- Se guarda el registro del cambio de estado
        INSERT INTO SolicitudPalmada(idpalmada, idadministrador, fechahorarespuesta, idestadosolicitud) VALUES
         (_idPalmada, _idAdministrador, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idEstadoSolicitud);
 
@@ -546,21 +551,23 @@ RETURNS INT AS $$
             rol INT;
             _idRol INT;
     BEGIN
-
+        -- Se guarda el registro del cambio de estado de la solicitud
         INSERT INTO solicitudcuenta(idcuenta, idadministrador, fechahorarespuesta, idestadosolicitud)  VALUES
         (_idCuenta, _idAdministrador, CURRENT_TIMESTAMP, _idEstadoSolicitud);
-
+        -- Se actualiza el estado de la nueva cuenta
         UPDATE NuevaCuenta
         SET idestadosolicitud = _idEstadoSolicitud
         WHERE idcuenta = _idCuenta
         RETURNING idusuario INTO _idUsuario;
 
-        IF _idEstadoSolicitud = 2 THEN
+        IF _idEstadoSolicitud = 2 THEN -- Cuenta aprobada
+            -- se activa el estado del usuario
             UPDATE Usuario
             SET estado = true
             WHERE idusuario = _idUsuario
             RETURNING rolactual INTO rol;
 
+            -- Se agrega el nuevo usuario a su rol respectivo o se actualiza si ya es existente
             IF rol = 4 THEN
                 SELECT idDocente INTO _idRol FROM Docente
                 WHERE idusuario = _idUsuario;
@@ -610,6 +617,7 @@ CREATE OR REPLACE FUNCTION crearHorario(
 )
 RETURNS INT AS $$
     DECLARE idHor INT;
+
     BEGIN
         SELECT idHorario INTO idHor FROM horario
         WHERE fechainicio <= _fechaFinal AND _fechaInicio <= fechafinal;
@@ -617,9 +625,9 @@ RETURNS INT AS $$
         IF idHor IS NULL THEN
             INSERT INTO Horario(horainiciolunes, horafinallunes, horainiciomartes, horafinalmartes, horainiciomiercoles, horafinalmiercoles, horainiciojueves, horafinaljueves, horainicioviernes, horafinalviernes, fechainicio, fechafinal, idadministrador) VALUES
             (_horaInicioLunes, _horaFinalLunes, _horaInicioMartes, _horaFinalMartes, _horaInicioMiercoles, _horaFinalMiercoles, _horaInicioJueves, _horaFinalJueves, _horaInicioViernes, _horaFinalViernes, _fechaInicio, _fechaFinal, _idAdministrador);
-            RETURN 10;
+            RETURN 10; -- Se crea el nuevo horario de trabajo
         ELSE
-            RETURN 11;
+            RETURN 11; -- Horario de trabajo presenta choques
         END IF;
     END;
     $$
@@ -644,6 +652,7 @@ CREATE OR REPLACE FUNCTION actualizarUsuario(
 )
 RETURNS INT AS $$
     BEGIN
+        -- Actualiza los datos del usuario
         UPDATE Usuario
         SET nombre = _nombre, apellidos = _apellidos, telefono = _telefono
         WHERE idusuario = _idUsuario;
@@ -682,24 +691,24 @@ RETURNS INT AS $$
             WHERE estado = true;
 
             IF cantAdmins = 1 THEN
-                RETURN 13;
+                RETURN 13; -- El usuario no se puede desactivar ya que es el ultimo administrador del sistema
             ELSE
                 UPDATE Administrador SET estado = false
                 WHERE idusuario = _idUsuario;
             END IF;
 
         END IF;
-
+        -- Se desactiva el usuario
         UPDATE Usuario
         SET estado = false
         WHERE idusuario = _idUsuario;
 
-        RETURN 14;
+        RETURN 14; -- Usuario desactivado
     END;
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION getIdRol(
+CREATE OR REPLACE FUNCTION getIdRol( -- Obtiene el id del rol asignado a ese usuario
     _idUsuario INT
 )RETURNS INT AS $$
     DECLARE idRol INT = 0;
@@ -730,7 +739,7 @@ CREATE OR REPLACE FUNCTION getIdRol(
     $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION buscarCorreo(
+CREATE OR REPLACE FUNCTION buscarCorreo( -- Obtiene el correo del usuario ingresado
     _idUsuario INT
 )
 RETURNS TEXT AS $$
@@ -744,7 +753,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION buscarCorreoSeguridad(
+CREATE OR REPLACE FUNCTION buscarCorreoSeguridad( -- Obtiene el correo del personal de seguridad
 )
 RETURNS TEXT AS $$
     DECLARE _correo INT;
@@ -764,6 +773,7 @@ CREATE OR REPLACE FUNCTION registrarCorreoEnviado(
 )
 RETURNS INT AS $$
     BEGIN
+        -- Guarda el registro del correo enviado
         INSERT INTO RegistroCorreos(correo, fechahora, idmotivocorreo) VALUES
         (_correo, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idMotivoCorreo);
 
@@ -797,7 +807,7 @@ RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
             j json;
     BEGIN
-
+        -- Retorna un json con 10 reportes de inventario, ordenados de mas nuevo a mas viejo
         SELECT json_agg(r) into j FROM (SELECT RI.idresporteinv, RI.fechahora, U.nombre AS nombreOperador, U.apellidos AS apellidosOperador, L.codigo AS codigoLab, RI.computadorasc, RI.computadorasi, RI.proyectores, RI.sillas, RI.extintores
                 FROM ReporteInventario RI
                 INNER JOIN Operador O on RI.idoperador = O.idoperador
@@ -819,7 +829,7 @@ RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
             j json;
     BEGIN
-
+        -- Retorna un json con 10 reportes de averias, ordenados de la mas nueva a la mas vieja y por su estado
         SELECT json_agg(r) into j FROM (SELECT RA.fechahora, RA.idreporteaveria, U.nombre AS nombreOperador, U.apellidos AS apellidosOperador, L.codigo AS codigoLab, RA.activo, E.info AS estado, RA.descripcion
                 FROM ReporteAveria RA
                 INNER JOIN Operador O on RA.idoperador = O.idoperador
@@ -841,7 +851,7 @@ RETURNS json AS $$
     DECLARE _now TIMESTAMP = CURRENT_TIMESTAMP AT TIME ZONE 'CST';
             j json;
     BEGIN
-
+        -- Retorna un json con la reserva actual de cada laboratorio, si el lab se omite significa que no hay reservas
         SELECT json_agg(r) into j FROM (SELECT L.idlaboratorio, L.codigo AS codigolab, L.aula AS aulalab, C.codigoNombre AS codigonombrecurso, R.horainicio, R.horafinal
                 FROM Reserva R
                 INNER JOIN Laboratorio L on R.idlaboratorio = L.idlaboratorio
@@ -863,7 +873,7 @@ CREATE OR REPLACE FUNCTION cancelarReserva(
         SET idestadoreserva = 3
         WHERE idreserva = _idReserva;
 
-        RETURN 21;
+        RETURN 21; -- Se cancela la reserva
     END;
 $$
 LANGUAGE plpgsql;
@@ -876,7 +886,7 @@ CREATE OR REPLACE FUNCTION cancelarPalmada(
         SET idestadosolicitud = 3
         WHERE idpalmada = _idPalmada;
 
-        RETURN 22;
+        RETURN 22; -- Se cancela la palmada
     END;
 $$
 LANGUAGE plpgsql;
@@ -885,6 +895,7 @@ CREATE OR REPLACE FUNCTION verEstadosAveria()
 RETURNS json AS $$
     DECLARE j json;
     BEGIN
+        -- Retorna un json con los estados de avería existentes
         SELECT json_agg(r) into j FROM (SELECT E.idestadoaveria, E.info FROM EstadoAveria E) r;
         RETURN j;
     END;
@@ -895,6 +906,7 @@ CREATE OR REPLACE FUNCTION verEstadosSolicitud()
 RETURNS json AS $$
     DECLARE j json;
     BEGIN
+        -- Retorna un json con los estados de solicitud existentes
         SELECT json_agg(r) into j FROM (SELECT E.idEstadoSolicitud, E.info FROM EstadoSolicitud E) r;
         RETURN j;
     END;
@@ -905,6 +917,7 @@ CREATE OR REPLACE FUNCTION verLaboratorios()
 RETURNS json AS $$
     DECLARE j json;
     BEGIN
+        -- Retorna un json con los laboratorios
         SELECT json_agg(r) into j FROM (SELECT L.idlaboratorio AS idlab, L.codigo, L.aula FROM Laboratorio L) r;
         RETURN j;
     END;
@@ -915,6 +928,7 @@ CREATE OR REPLACE FUNCTION verCursos()
 RETURNS json AS $$
     DECLARE j json;
     BEGIN
+        -- Retorna un json con los cursos
         SELECT json_agg(r) into j FROM (SELECT idCurso, codigoNombre FROM Curso) r;
         RETURN j;
     END;
@@ -928,6 +942,7 @@ RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
             j json;
     BEGIN
+        -- Retorna un json con 10 solicitudes de cuenta, ordenados de la mas nueva a la mas vieja
         SELECT json_agg(r) into j FROM (SELECT NC.idcuenta AS idNuevaCuenta, NC.fechahora, U.nombre, U.apellidos, U.idxtec, U.email
                 FROM NuevaCuenta NC
                 INNER JOIN Usuario U on NC.idusuario = U.idusuario
@@ -947,6 +962,7 @@ RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
             j json;
     BEGIN
+        -- Retorna un json con 10 reportes de tiempo trabajado, ordenados del mas nuevo al mas viejo
         SELECT json_agg(r) into j FROM (SELECT R.idreportett, R.fechahora, O.idoperador, U.nombre, U.apellidos, R.horainicio, R.horafinal, R.actividades
                 FROM ReporteTT R
                 INNER JOIN Operador O on R.idoperador = O.idoperador
@@ -967,6 +983,7 @@ RETURNS json AS $$
     DECLARE _offset INT = _pagina * 10 - 10;
             j json;
     BEGIN
+        -- Retorna un json con 10 solicitudes de palmada, ordenados de la mas nueva a la mas vieja
         SELECT json_agg(r) into j FROM (SELECT P.idpalmada, P.fechahorasolicitud, O.idoperador, U.nombre AS nombreOperador, U.apellidos AS apellidosOperador, P.fechahorai, P.fechahoraf, P.motivo, L.idlaboratorio AS idLab, L.codigo AS codigolab
                 FROM Palmada P
                 INNER JOIN Laboratorio L on P.idlaboratorio = L.idlaboratorio
@@ -988,6 +1005,7 @@ CREATE OR REPLACE FUNCTION verReservas(
 )RETURNS json AS $$
     DECLARE j json;
     BEGIN
+        -- Retorna un json con todas las reservas existentes en un lab entre la fecha inicial (_fechaLunes) y la fecha final (_fehcaDomingo)
         SELECT json_agg(r) into j FROM (SELECT R.idreserva, R.horainicio, R.horafinal, R.fechareserva, C.idcurso, C.codigoNombre AS codigonombrecurso, R.idestadoreserva
                 FROM Reserva R
                 INNER JOIN laboratorio l on R.idlaboratorio = l.idlaboratorio
@@ -1007,6 +1025,7 @@ CREATE OR REPLACE FUNCTION verMisReservas(
 )RETURNS json AS $$
     DECLARE j json;
     BEGIN
+        -- Retorna un json con todas las reservas del docente existentes en un lab entre la fecha inicial (_fechaLunes) y la fecha final (_fehcaDomingo)
         SELECT json_agg(r) into j FROM (SELECT R.idreserva, R.horainicio, R.horafinal, R.fechareserva, C.idcurso, C.codigoNombre AS codigonombrecurso, R.idestadoreserva
                 FROM Reserva R
                 INNER JOIN Laboratorio L on R.idlaboratorio = L.idlaboratorio
@@ -1029,6 +1048,7 @@ RETURNS json AS $$
     BEGIN
         SELECT buscarIdUsuario(_idXTEC) INTO _idUsuario;
 
+        -- Retorna un json con el idUsuario, su rol en el sistema y su id de ese rol
         SELECT json_agg(r) into j FROM (SELECT * FROM (SELECT U.idusuario, U.rolactual FROM Usuario U
                                         WHERE U.idusuario = _idUsuario) a,
                                         (SELECT getIdRol(_idUsuario) AS idRol) b) r;
@@ -1080,5 +1100,4 @@ CREATE OR REPLACE FUNCTION responderFSatisfaccion(
     $$
 LANGUAGE plpgsql;
 ---------------------------------------------------------------
-
-
+SELECT crearHorario('7:30:00', '17:30:00','7:30:00','17:30:00','7:30:00','17:30:00','7:30:00','17:30:00','7:30:00','17:30:00','2021-7-20', '2021-8-20', 1);
