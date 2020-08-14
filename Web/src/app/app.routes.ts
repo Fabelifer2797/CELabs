@@ -21,6 +21,8 @@ import { DashboardComponent } from './componentes/administrador/dashboard/dashbo
 import { FormSatisfaccionComponent } from './componentes/administrador/form-satisfaccion/form-satisfaccion.component';
 import {DetalleAveriaADComponent} from './componentes/administrador/detalle-averia-ad/detalle-averia-ad.component';
 import {DetalleInventarioADComponent} from './componentes/administrador/detalle-inventario-ad/detalle-inventario-ad.component';
+import {DetalleAveriaOPComponent} from './componentes/operador/detalle-averia-op/detalle-averia-op.component';
+import {DetalleInventarioOPComponent} from './componentes/operador/detalle-inventario-op/detalle-inventario-op.component';
 
 
 const APP_ROUTES: Routes = [
@@ -46,6 +48,8 @@ const APP_ROUTES: Routes = [
     {path:'formSatisfaccion',component:FormSatisfaccionComponent},
     {path:'detalleAveriaAD', component:DetalleAveriaADComponent},
     {path:'detalleInventarioAD', component:DetalleInventarioADComponent},
+    {path:'detalleAveriaOP', component:DetalleAveriaOPComponent},
+    {path:'detalleInventarioOP', component:DetalleInventarioOPComponent},
     {path: '**', pathMatch: 'full', redirectTo: 'homeAdmin'}
 ];
 
