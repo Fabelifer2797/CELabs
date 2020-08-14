@@ -307,7 +307,7 @@ RETURNS INT AS $$
             _idHorario INT;
     BEGIN
         SELECT idhorario INTO _idHorario FROM horario
-        WHERE fechainicio < _fechaReserva AND fechafinal > _fechaReserva;
+        WHERE fechainicio <= _fechaReserva AND fechafinal >= _fechaReserva;
 
         IF _idHorario IS NULL THEN
             RETURN 16; -- Reserva fuera de las fechas de horario
@@ -319,19 +319,19 @@ RETURNS INT AS $$
             RETURN 17; -- La reserva es en un fin de semana
         ELSEIF diaSemana = 1 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainiciolunes < _horaInicio AND horafinallunes > _horaFinal;
+            WHERE horainiciolunes <= _horaInicio AND horafinallunes >= _horaFinal;
         ELSEIF diaSemana = 2 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainiciomartes < _horaInicio AND horafinalmartes > _horaFinal;
+            WHERE horainiciomartes <= _horaInicio AND horafinalmartes >= _horaFinal;
         ELSEIF diaSemana = 3 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainiciomiercoles < _horaInicio AND horafinalmiercoles > _horaFinal;
+            WHERE horainiciomiercoles <= _horaInicio AND horafinalmiercoles >= _horaFinal;
         ELSEIF diaSemana = 4 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainiciojueves < _horaInicio AND horafinaljueves > _horaFinal;
+            WHERE horainiciojueves <= _horaInicio AND horafinaljueves >= _horaFinal;
         ELSE
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainicioviernes < _horaInicio AND horafinalviernes > _horaFinal;
+            WHERE horainicioviernes <= _horaInicio AND horafinalviernes >= _horaFinal;
         END IF;
 
         IF _idHorario IS NULL THEN
@@ -475,7 +475,7 @@ RETURNS INT AS $$
     BEGIN
 
         SELECT idhorario INTO _idHorario FROM horario
-        WHERE fechainicio < _fechaHoraI AND fechafinal > _fechaHoraI;
+        WHERE fechainicio <= _fechaHoraI AND fechafinal >= _fechaHoraI;
 
         IF _idHorario IS NULL THEN
             RETURN 16; -- Reserva fuera de las fechas de horario
@@ -485,22 +485,22 @@ RETURNS INT AS $$
 
         IF diaSemana = 1 THEN  -- Valida que la reserva se realice fuera de las horas del horario especificadas
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainiciomartes > _horaF AND horafinallunes < _horaI;
+            WHERE horainiciomartes >= _horaF AND horafinallunes <= _horaI;
         ELSEIF diaSemana = 2 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainiciomiercoles > _horaF AND horafinalmartes < _horaI;
+            WHERE horainiciomiercoles >= _horaF AND horafinalmartes <= _horaI;
         ELSEIF diaSemana = 3 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainiciojueves > _horaF AND horafinalmiercoles < _horaI;
+            WHERE horainiciojueves >= _horaF AND horafinalmiercoles <= _horaI;
         ELSEIF diaSemana = 4 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainicioviernes > _horaF AND horafinaljueves < _horaI;
+            WHERE horainicioviernes >= _horaF AND horafinaljueves <= _horaI;
         ELSEIF diaSemana = 5 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horafinalviernes < _horaI;
+            WHERE horafinalviernes <= _horaI;
         ELSEIF diaSemana = 0 THEN
             SELECT idhorario INTO _idHorario FROM Horario
-            WHERE horainiciolunes > _horaF;
+            WHERE horainiciolunes >= _horaF;
         END IF;
 
         IF _idHorario IS NULL THEN
