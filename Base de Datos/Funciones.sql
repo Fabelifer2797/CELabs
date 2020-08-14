@@ -289,7 +289,7 @@ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION crearReserva(
     _idOperador INT,
-    _idUsuarioReserva INT,
+    _idXTECSolicitante TEXT,
     _fechaReserva DATE,
     _horaInicio TIME,
     _horaFinal TIME,
@@ -299,6 +299,7 @@ CREATE OR REPLACE FUNCTION crearReserva(
 )
 RETURNS INT AS $$
     DECLARE idRes INT;
+            _idSol INT;
             diaSemana INT;
             _fecha timestamp = _fechaReserva + _horaInicio;
             _y  INT = EXTRACT(YEAR FROM _fecha);
@@ -306,6 +307,8 @@ RETURNS INT AS $$
             _d INT = EXTRACT(DAY FROM _fecha);
             _idHorario INT;
     BEGIN
+        SELECT buscarIdUsuario(_idXTECSolicitante) into _idSol;
+
         SELECT idhorario INTO _idHorario FROM horario
         WHERE fechainicio <= _fechaReserva AND fechafinal >= _fechaReserva;
 
@@ -343,7 +346,7 @@ RETURNS INT AS $$
 
         IF idRes IS NULL THEN
             INSERT INTO Reserva(idoperador, idusuario, fechareserva, horainicio, horafinal, fechahorasolicitud, idlaboratorio, idestadoreserva, motivo, idcurso) VALUES
-            (_idOperador, _idUsuarioReserva, _fechaReserva, _horaInicio, _horaFinal, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idLaboratorio, 1, _motivo, _idCurso);
+            (_idOperador, _idSol, _fechaReserva, _horaInicio, _horaFinal, CURRENT_TIMESTAMP AT TIME ZONE 'CST', _idLaboratorio, 1, _motivo, _idCurso);
             RETURN 4; -- Nueva reserva creada
         ELSE
             RETURN 5; -- Reserva choca con otra
@@ -1100,4 +1103,3 @@ CREATE OR REPLACE FUNCTION responderFSatisfaccion(
     $$
 LANGUAGE plpgsql;
 ---------------------------------------------------------------
-SELECT crearHorario('7:30:00', '17:30:00','7:30:00','17:30:00','7:30:00','17:30:00','7:30:00','17:30:00','7:30:00','17:30:00','2021-7-20', '2021-8-20', 1);
