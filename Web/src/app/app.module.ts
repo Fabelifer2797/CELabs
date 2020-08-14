@@ -1,8 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {HttpClientModule} from '@angular/common/http';
 
 //Rutas
-import { APP_ROUTING } from './app.routes';
+import { AppRoutingModule } from './app-routing.module';
 
 //Servicios
 
@@ -35,6 +37,8 @@ import { DetalleAveriaOPComponent } from './componentes/operador/detalle-averia-
 import { DetalleAveriaADComponent } from './componentes/administrador/detalle-averia-ad/detalle-averia-ad.component';
 import { DetalleInventarioADComponent } from './componentes/administrador/detalle-inventario-ad/detalle-inventario-ad.component';
 import { DetalleInventarioOPComponent } from './componentes/operador/detalle-inventario-op/detalle-inventario-op.component';
+import { LoginComponent } from './componentes/compartidos/login/login.component';
+import { CrearCuentaComponent } from './componentes/compartidos/crear-cuenta/crear-cuenta.component';
 
 @NgModule({
   declarations: [
@@ -64,11 +68,15 @@ import { DetalleInventarioOPComponent } from './componentes/operador/detalle-inv
     DetalleAveriaOPComponent,
     DetalleAveriaADComponent,
     DetalleInventarioADComponent,
-    DetalleInventarioOPComponent
+    DetalleInventarioOPComponent,
+    LoginComponent,
+    CrearCuentaComponent
   ],
   imports: [
     BrowserModule,
-    APP_ROUTING
+    FormsModule,
+    HttpClientModule,
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

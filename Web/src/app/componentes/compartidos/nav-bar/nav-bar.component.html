@@ -12,15 +12,15 @@
         <a class="nav-link" [routerLink] = "['homeOperador']">Página Principal <span class="sr-only glyphicon glyphicon-home">(current)</span></a>
       </li>
       <li class="nav-item" routerLinkActive="active">
-        <a class="nav-link" [routerLink] = "['calendario']">Calendario <span class="sr-only">(current)</span></a>
+        <a class="nav-link" [routerLink] = "['/calendario']">Calendario <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Perfil
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" [routerLink] = "['perfilUsuario']" >Revisar mi Perfil</a>
-          <a class="dropdown-item" [routerLink] = "['configurarCuenta']">Configurar Cuenta</a>
+          <a class="dropdown-item" [routerLink] = "['/perfilUsuario']" >Revisar mi Perfil</a>
+          <a class="dropdown-item" [routerLink] = "['/configurarCuenta']">Configurar Cuenta</a>
         </div>
       </li>
       <li class="nav-item dropdown">
@@ -52,7 +52,7 @@
       </li>
     </ul>
     <form class="form-inline">
-        <button class="btn btn-outline-danger" type="button">Cerrar Sesión</button>
+        <button class="btn btn-outline-primary" type="button" (click)="salir()">Cerrar Sesión</button>
     </form>
   </div>
 </nav>

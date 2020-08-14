@@ -1,4 +1,5 @@
 import {RouterModule,Routes} from '@angular/router';
+import { NgModule } from '@angular/core';
 import {HomeAdminComponent} from './componentes/administrador/home-admin/home-admin.component';
 import {CalendarioComponent  } from './componentes/compartidos/calendario/calendario.component';
 import { HomeOperadorComponent } from './componentes/operador/home-operador/home-operador.component';
@@ -19,19 +20,23 @@ import { VisualizarReportesInventariosComponent } from './componentes/administra
 import {ConfiguracionesInicialesComponent} from './componentes/administrador/configuraciones-iniciales/configuraciones-iniciales.component';
 import { DashboardComponent } from './componentes/administrador/dashboard/dashboard.component';
 import { FormSatisfaccionComponent } from './componentes/administrador/form-satisfaccion/form-satisfaccion.component';
+import {LoginComponent} from  './componentes/compartidos/login/login.component';
+import { CrearCuentaComponent } from './componentes/compartidos/crear-cuenta/crear-cuenta.component';
 import {DetalleAveriaADComponent} from './componentes/administrador/detalle-averia-ad/detalle-averia-ad.component';
 import {DetalleInventarioADComponent} from './componentes/administrador/detalle-inventario-ad/detalle-inventario-ad.component';
-import {DetalleAveriaOPComponent} from './componentes/operador/detalle-averia-op/detalle-averia-op.component';
-import {DetalleInventarioOPComponent} from './componentes/operador/detalle-inventario-op/detalle-inventario-op.component';
+import { AuthGuard } from './guards/auth.guard';
+
 
 
 const APP_ROUTES: Routes = [
-    {path: 'homeOperador',component:HomeOperadorComponent},
-    {path: 'homeAdmin', component: HomeAdminComponent},
-    {path: 'calendario',component: CalendarioComponent},
-    {path: 'reservaLaboratorio', component: ReservaLabComponent},
-    {path: 'reporteAveria', component: ReporteAveriaComponent},
-    {path: 'reportesGeneradosAverias',component:ReportesGeneradosAveriasComponent},
+    {path:'login',component:LoginComponent},
+    {path:'crearCuenta',component:CrearCuentaComponent},
+    {path:'homeOperador',component:HomeOperadorComponent},
+    {path:'homeAdmin', component: HomeAdminComponent,canActivate: [ AuthGuard ]},
+    {path:'calendario',component: CalendarioComponent},
+    {path:'reservaLaboratorio', component: ReservaLabComponent},
+    {path:'reporteAveria', component: ReporteAveriaComponent},
+    {path:'reportesGeneradosAverias',component:ReportesGeneradosAveriasComponent},
     {path:'reporteInventario',component:ReporteInventarioComponent},
     {path:'reportesGeneradosInventario',component:ReportesGeneradosInventarioComponent},
     {path:'registrarTiempo',component:RegistrarTiempoComponent},
@@ -43,15 +48,20 @@ const APP_ROUTES: Routes = [
     {path:'validarHoras',component:ValidarHorasComponent},
     {path:'visualizarReportesAverias',component:VisualizarReportesAveriasComponent},
     {path:'visualizarReportesInventarios',component:VisualizarReportesInventariosComponent},
-    {path: 'configuracionesIniciales',component:ConfiguracionesInicialesComponent},
+    {path:'configuracionesIniciales',component:ConfiguracionesInicialesComponent},
     {path:'dashboard',component:DashboardComponent},
     {path:'formSatisfaccion',component:FormSatisfaccionComponent},
-    {path:'detalleAveriaAD', component:DetalleAveriaADComponent},
-    {path:'detalleInventarioAD', component:DetalleInventarioADComponent},
-    {path:'detalleAveriaOP', component:DetalleAveriaOPComponent},
-    {path:'detalleInventarioOP', component:DetalleInventarioOPComponent},
-    {path: '**', pathMatch: 'full', redirectTo: 'homeAdmin'}
+    {path:'detalleAveriaAD',component:DetalleAveriaADComponent},
+    {path:'detalleInventarioAD',component:DetalleInventarioADComponent},
+    {path: '**', pathMatch: 'full', redirectTo: 'login'}
 ];
 
 
-export const APP_ROUTING = RouterModule.forRoot(APP_ROUTES,{useHash:true});
+@NgModule({
+    imports: [RouterModule.forRoot(APP_ROUTES,{useHash:true})],
+    exports: [RouterModule]
+  })
+
+  export class AppRoutingModule { }
+
+  //export const APP_ROUTING = RouterModule.forRoot(APP_ROUTES,{useHash:true});
