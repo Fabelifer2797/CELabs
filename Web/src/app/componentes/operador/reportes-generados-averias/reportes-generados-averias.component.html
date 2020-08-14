@@ -1,16 +1,20 @@
+<app-nav-bar></app-nav-bar>
+<div class="container main-container">
+
 <h1>Reportes de averías</h1>
 
 <hr>
 
 <div class="card-columns">
-    <div class="card text-white bg-info mb-3" style="max-width: 18rem;">
+    <div class="colorCard card mb-3" style="max-width: 18rem;">
         <div class="card-header">12/12/12</div>
             <div class="card-body">
                 <h5 class="card-title">Pendiente</h5>
                 <p class="card-text">Computadora ## Laboratorio 7</p>
-                <button type="button" class="btn btn-dark">Detalles</button>
+                <button type="button" class="colorButtons btn" [routerLink] = "['/detalleAveriaOP']">Detalles</button>
             </div>
     </div>
 </div>
 
-<button type="button" class="btn btn-success"  [routerLink] = "['/reporteAveria']">Regresar</button>
+<button type="button" class="colorOutlineButtons btn btn-outline"  [routerLink] = "['/reporteAveria']">Regresar</button>
+</div>
