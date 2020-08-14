@@ -47,8 +47,7 @@ CREATE TABLE IF NOT EXISTS Laboratorio(
 
 CREATE TABLE IF NOT EXISTS Curso(
     idCurso SERIAL PRIMARY KEY,
-    codigo TEXT NOT NULL,
-    nombre TEXT NOT NULL
+    codigoNombre TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS EstadoReserva(

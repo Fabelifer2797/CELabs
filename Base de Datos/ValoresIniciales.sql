@@ -1,16 +1,16 @@
 INSERT INTO Usuario(nombre, apellidos, idxtec, email, telefono, estado, rolactual) VALUES
-('Luis Diego', 'Noguera Mena', '0000', 'lnoguera@itcr.ac.cr', '----', true, 1);
+('Luis Diego', 'Noguera Mena', '----', 'lnoguera@itcr.ac.cr', '----', true, 1);
 
 INSERT INTO  Administrador(idusuario, estado) VALUES (1, true);
 
 INSERT INTO EstadoReserva(info) values
-('Reservado'),
+('Reservada'),
 ('Terminada'),
 ('Cancelada');
 
 INSERT INTO EstadoAveria(info) values
 ('Pendiente de atencion'),
-('En progreso'),
+('En proceso'),
 ('Terminada');
 
 INSERT INTO EstadoSolicitud(info) values
@@ -29,3 +29,6 @@ INSERT INTO MotivoCorreo(motivo) VALUES
 ('Reserva Aprobada'),
 ('Palmada Aprobada'),
 ('Palmada Cancelada');
+
+INSERT INTO Curso(codigonombre) VALUES
+('CE2003: Curso de ejemplo de CE')
