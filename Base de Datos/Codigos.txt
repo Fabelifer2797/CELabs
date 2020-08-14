@@ -1,3 +1,4 @@
+CELabs
 1: Usuario creado con exito
 2: Error: Usuario ya activo en el sistema
 3: Cuenta creada y esperando aprobacion
@@ -20,3 +21,14 @@
 20: Nuevo estado de avería creado
 21: Reserva cancelada
 22: Palmada cancelada
+23: Gracias por responder el formulario de satisfaccion
+
+----------------------------------------------------------------
+XTEC
+0: El usuario no existe en XTEC
+1: Contraseña incorrecta
+2: Log in exitoso
+
+----------------------------------------------------------------
+DepBecas
+0: Registro guardado
