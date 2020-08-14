@@ -1,0 +1,17 @@
+.colorButtons {
+    background: #1d2357;
+    color: #fff;
+}
+.colorOutlineButtons {
+    color: #1d2357;
+    border-color: #1d2357;
+    
+}
+
+.colorOutlineButtons:hover{
+    color: #fff;
+    border-color: #1d2357;
+    background: #1d2357
+    
+}
+
